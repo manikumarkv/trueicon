@@ -1,6 +1,8 @@
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { buildIndex } from "../../src/indexer/buildIndex.js";
 import { parseIcons } from "../../src/providers/adapters/react-icons.js";
+import { expectRecordShape } from "../helpers/records.js";
 
 const FIXTURE = join(import.meta.dirname, "..", "fixtures", "react-icons");
 
@@ -47,5 +49,16 @@ describe("react-icons adapter", () => {
     expect(byName.get("fa-500-px")?.svg).toBe(
       '<g fill-rule="evenodd" stroke-width="2"><path d="M1 2"/><circle cx="5" cy="5" r="3"/></g>',
     );
+  });
+
+  it("builds records with <package>@<major.minor>:<name> ids", async () => {
+    const { records } = await buildIndex({ providerId: "react-icons", packageDir: FIXTURE, version: "5.3.0" });
+    for (const record of records) expectRecordShape(record, "react-icons@5.3");
+    expect(records.map((r) => r.id).sort()).toEqual([
+      "react-icons@5.3:fa-500-px",
+      "react-icons@5.3:fa-beer",
+      "react-icons@5.3:fa6-beer",
+      "react-icons@5.3:hi2-outline-academic-cap",
+    ]);
   });
 });

@@ -1,6 +1,8 @@
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { buildIndex } from "../../src/indexer/buildIndex.js";
 import { parseIcons } from "../../src/providers/adapters/lucide.js";
+import { expectRecordShape } from "../helpers/records.js";
 
 const FIXTURE = join(import.meta.dirname, "..", "fixtures", "lucide");
 
@@ -32,5 +34,21 @@ describe("lucide adapter", () => {
 
   it("drops React-only key props from the SVG", () => {
     for (const icon of icons) expect(icon.svg).not.toContain("key=");
+  });
+
+  it("builds records with <package>@<major.minor>:<name> ids and alias keywords", async () => {
+    const { records } = await buildIndex({ providerId: "lucide", packageDir: FIXTURE, version: "0.460.0" });
+    for (const record of records) expectRecordShape(record, "lucide-react@0.460");
+    const alert = records.find((r) => r.name === "circle-alert")!;
+    expect(alert).toMatchObject({
+      id: "lucide-react@0.460:circle-alert",
+      provider: "lucide",
+      package: "lucide-react",
+      version: "0.460.0",
+      importName: "CircleAlert",
+      importPath: "lucide-react",
+      tags: ["alert-circle"],
+    });
+    expect(alert.keywords).toEqual(["circle", "alert", "alert-circle"]);
   });
 });

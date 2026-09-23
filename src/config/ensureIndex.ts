@@ -28,10 +28,21 @@ async function readMeta(cacheDir: string): Promise<IndexMeta | null> {
   }
 }
 
+// In-progress builds by index dir, so concurrent tool calls share one download instead of racing.
+const inFlight = new Map<string, Promise<EnsureIndexResult>>();
+
 /** Makes sure an up-to-date index for packageName@version exists under cacheRoot. */
-export async function ensureIndex(opts: EnsureIndexOptions): Promise<EnsureIndexResult> {
+export function ensureIndex(opts: EnsureIndexOptions): Promise<EnsureIndexResult> {
+  const cacheDir = join(opts.cacheRoot, indexKey(opts.packageName, opts.version));
+  const pending = inFlight.get(cacheDir);
+  if (pending) return pending;
+  const run = ensureIndexAt(cacheDir, opts).finally(() => inFlight.delete(cacheDir));
+  inFlight.set(cacheDir, run);
+  return run;
+}
+
+async function ensureIndexAt(cacheDir: string, opts: EnsureIndexOptions): Promise<EnsureIndexResult> {
   const { cacheRoot, providerId, packageName, version, synonyms } = opts;
-  const cacheDir = join(cacheRoot, indexKey(packageName, version));
   const action = resolveIndexAction(version, await readMeta(cacheDir), hashSynonyms(synonyms));
   if (action === "use") return { cacheDir, action };
 

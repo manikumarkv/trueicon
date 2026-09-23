@@ -1,6 +1,8 @@
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { buildIndex } from "../../src/indexer/buildIndex.js";
 import { parseIcons } from "../../src/providers/adapters/heroicons.js";
+import { expectRecordShape } from "../helpers/records.js";
 
 const FIXTURE = join(import.meta.dirname, "..", "fixtures", "heroicons");
 
@@ -42,6 +44,17 @@ describe("heroicons adapter", () => {
       svg:
         '<g clip-path="url(#a)"><path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16"/></g>' +
         '<defs><clipPath id="a"><path d="M0 0h20v20H0z"/></clipPath></defs>',
+    });
+  });
+
+  it("builds records with <package>@<major.minor>:<name> ids", async () => {
+    const { records } = await buildIndex({ providerId: "heroicons", packageDir: FIXTURE, version: "2.1.1" });
+    for (const record of records) expectRecordShape(record, "@heroicons/react@2.1");
+    expect(records.find((r) => r.name === "trash-24-outline")).toMatchObject({
+      id: "@heroicons/react@2.1:trash-24-outline",
+      provider: "heroicons",
+      package: "@heroicons/react",
+      importPath: "@heroicons/react/24/outline",
     });
   });
 });
