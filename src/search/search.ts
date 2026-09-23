@@ -58,16 +58,31 @@ function matches(value: string | undefined, filter: string | undefined): boolean
   return filter === undefined || value?.toLowerCase() === filter.toLowerCase();
 }
 
-/** Filters records by provider/style/set exactly, then ranks them against the query with Fuse.js. */
+/**
+ * Filters records by provider/style/set exactly, then ranks them against the query with Fuse.js.
+ * Multi-word queries are searched token by token: only records matching every token are kept,
+ * ranked by their mean per-token score.
+ */
 export function searchIcons(records: readonly IconRecord[], query: string, options: SearchOptions = {}): SearchResult[] {
-  const trimmed = query.trim();
-  if (!trimmed) return [];
+  const tokens = query.trim().split(/\s+/).filter(Boolean);
+  if (tokens.length === 0) return [];
   const { provider, style, set, limit } = options;
   const filtered = records.filter(
     (r) => matches(r.provider, provider) && matches(r.style, style) && matches(r.set, set),
   );
-  const results = new Fuse(filtered, FUSE_OPTIONS)
-    .search(trimmed)
-    .map((result) => ({ record: result.item, score: result.score ?? 0 }));
+  const fuse = new Fuse(filtered, FUSE_OPTIONS);
+  const perToken = tokens.map(
+    (token) => new Map(fuse.search(token).map((result) => [result.item, result.score ?? 0] as const)),
+  );
+  const [first, ...rest] = perToken;
+  // Iterate in the first token's ranked order so ties keep Fuse's ordering (sort is stable).
+  const results: SearchResult[] = [];
+  for (const [record, score] of first!) {
+    const others = rest.map((scores) => scores.get(record));
+    if (others.some((s) => s === undefined)) continue;
+    const total = others.reduce<number>((sum, s) => sum + s!, score);
+    results.push({ record, score: total / tokens.length });
+  }
+  results.sort((a, b) => a.score - b.score);
   return limit === undefined ? results : results.slice(0, Math.max(0, limit));
 }

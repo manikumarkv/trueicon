@@ -107,6 +107,25 @@ describe("searchIcons", () => {
   it("returns nothing for unrelated queries", () => {
     expect(searchIcons(records, "zzzzqqq")).toEqual([]);
   });
+
+  it("matches multi-word queries token by token", () => {
+    const results = searchIcons(records, "trash can", { provider: "lucide" });
+    // The lucide trash-can alias is folded into Trash2 at index time.
+    expect(results[0]?.record.importName).toBe("Trash2");
+    expect(searchIcons(records, "trash can", { limit: 3 }).map((r) => r.record.importName)).toContain("Trash2");
+    const scores = results.map((r) => r.score);
+    expect(scores).toEqual([...scores].sort((a, b) => a - b));
+    // Extra whitespace between tokens is ignored.
+    expect(searchIcons(records, "  trash   can ", { provider: "lucide" })).toEqual(results);
+  });
+
+  it("requires every token of a multi-word query to match", () => {
+    expect(searchIcons(records, "trash zzzzqqq")).toEqual([]);
+  });
+
+  it("tolerates typos within multi-word queries", () => {
+    expect(searchIcons(records, "detele trash", { provider: "lucide" })[0]?.record.importName).toBe("Trash2");
+  });
 });
 
 describe("buildIndexFromPackage + loadIndex", () => {
