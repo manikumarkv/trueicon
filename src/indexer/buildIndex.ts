@@ -101,3 +101,17 @@ export async function writeIndex(cacheDir: string, records: IconRecord[], meta: 
   await writeFile(join(cacheDir, INDEX_FILE), JSON.stringify(records));
   await writeFile(join(cacheDir, META_FILE), `${JSON.stringify(meta, null, 2)}\n`);
 }
+
+/** Builds a package's index and writes it to `<cacheRoot>/<package>@<major.minor>`. */
+export async function buildIndexFromPackage(
+  packageDir: string,
+  providerId: string,
+  version: string,
+  cacheRoot: string,
+  synonyms: Synonyms = {},
+): Promise<BuiltIndex & { dir: string }> {
+  const built = await buildIndex({ providerId, packageDir, version, synonyms });
+  const dir = join(cacheRoot, `${built.meta.package}@${majorMinor(version)}`);
+  await writeIndex(dir, built.records, built.meta);
+  return { ...built, dir };
+}
