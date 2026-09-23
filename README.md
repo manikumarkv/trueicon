@@ -1,5 +1,10 @@
 # TrueIcon
 
+[![npm](https://img.shields.io/npm/v/trueicon?style=flat-square)](https://www.npmjs.com/package/trueicon)
+[![Install in VS Code](https://img.shields.io/badge/VS_Code-Install_Server-0098FF?style=flat-square&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=trueicon&config=%7B%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22trueicon%22%5D%2C%22env%22%3A%7B%22TRUEICON_PROJECT_DIR%22%3A%22%24%7BworkspaceFolder%7D%22%7D%7D)
+[![Install in VS Code Insiders](https://img.shields.io/badge/VS_Code_Insiders-Install_Server-24bfa5?style=flat-square&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=trueicon&config=%7B%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22trueicon%22%5D%2C%22env%22%3A%7B%22TRUEICON_PROJECT_DIR%22%3A%22%24%7BworkspaceFolder%7D%22%7D%7D&quality=insiders)
+[![Install in Cursor](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en/install-mcp?name=trueicon&config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyIteSIsInRydWVpY29uIl0sImVudiI6eyJUUlVFSUNPTl9QUk9KRUNUX0RJUiI6IiR7d29ya3NwYWNlRm9sZGVyfSJ9fQ%3D%3D)
+
 TrueIcon is an [MCP](https://modelcontextprotocol.io) server that gives AI coding assistants exact, version-correct icon references. Your assistant searches the icon packages your project actually uses (`lucide-react`, `react-icons`, `@heroicons/react`) and gets back real icon names, import paths and a ready-to-paste `import` line.
 
 ## Why
@@ -147,6 +152,28 @@ Claude Desktop doesn't start servers in your project directory, so set `TRUEICON
 ```
 
 Restart Claude Desktop after editing the file.
+
+## Using it in VS Code and Cursor
+
+Use the install badges at the top of this README. They add TrueIcon with `TRUEICON_PROJECT_DIR` set to `${workspaceFolder}`, so it searches the project you have open.
+
+To add it by hand in VS Code, create `.vscode/mcp.json` in your project:
+
+```json
+{
+  "servers": {
+    "trueicon": {
+      "command": "npx",
+      "args": ["-y", "trueicon"],
+      "env": {
+        "TRUEICON_PROJECT_DIR": "${workspaceFolder}"
+      }
+    }
+  }
+}
+```
+
+In Cursor, use the same entry under `"mcpServers"` in `.cursor/mcp.json`.
 
 ## Tools
 
