@@ -6,7 +6,7 @@ export interface Provider {
   description: string;
 }
 
-// Icon providers supported in v1.
+// Supported icon providers.
 export const PROVIDERS: readonly Provider[] = [
   {
     id: "react-icons",
@@ -22,6 +22,21 @@ export const PROVIDERS: readonly Provider[] = [
     id: "heroicons",
     package: "@heroicons/react",
     description: "Heroicons by the Tailwind CSS team as React components",
+  },
+  {
+    id: "phosphor",
+    package: "@phosphor-icons/react",
+    description: "Phosphor icons in six weights (thin, light, regular, bold, fill, duotone) as React components",
+  },
+  {
+    id: "tabler",
+    package: "@tabler/icons-react",
+    description: "Tabler icons (outline and filled) as React components",
+  },
+  {
+    id: "iconoir",
+    package: "iconoir-react",
+    description: "Iconoir icons (regular and solid) as React components",
   },
 ];
 

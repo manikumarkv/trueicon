@@ -1,4 +1,4 @@
-import type { JsValue } from "./jsLiteral.js";
+import type { JsValue, LiteralCursor } from "./jsLiteral.js";
 
 export interface SvgNode {
   tag: string;
@@ -104,4 +104,18 @@ export function toSvgAttrs(value: JsValue | undefined): Record<string, string | 
     }
   }
   return attrs;
+}
+
+// Parses a compiled `<ns>.createElement("tag", {attrs} | null, ...children)` call (any namespace
+// identifier, e.g. "React" or a minified "e"), recursing into element children.
+export function parseCreateElement(cursor: LiteralCursor): SvgNode {
+  cursor.identifier();
+  cursor.expect(".createElement(");
+  const tag = cursor.string();
+  cursor.expect(",");
+  const attr = toSvgAttrs(cursor.value());
+  const child: SvgNode[] = [];
+  while (cursor.eat(",")) child.push(parseCreateElement(cursor));
+  cursor.expect(")");
+  return { tag, attr, child };
 }

@@ -1,0 +1,1 @@
+import{IconoirContext as r,IconoirProvider as a}from"./IconoirContext.mjs";import{default as f}from"./regular/Airplane.mjs";import{default as d}from"./regular/Trash.mjs";import{default as u}from"./solid/Trash.mjs";export{f as Airplane,r as IconoirContext,a as IconoirProvider,d as Trash,u as TrashSolid};

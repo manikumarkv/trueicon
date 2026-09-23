@@ -5,7 +5,7 @@
 [![Install in VS Code Insiders](https://img.shields.io/badge/VS_Code_Insiders-Install_Server-24bfa5?style=flat-square&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=trueicon&config=%7B%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22trueicon%22%5D%2C%22env%22%3A%7B%22TRUEICON_PROJECT_DIR%22%3A%22%24%7BworkspaceFolder%7D%22%7D%7D&quality=insiders)
 [![Install in Cursor](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en/install-mcp?name=trueicon&config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyIteSIsInRydWVpY29uIl0sImVudiI6eyJUUlVFSUNPTl9QUk9KRUNUX0RJUiI6IiR7d29ya3NwYWNlRm9sZGVyfSJ9fQ%3D%3D)
 
-TrueIcon is an [MCP](https://modelcontextprotocol.io) server that gives AI coding assistants exact, version-correct icon references. Your assistant searches the icon packages your project actually uses (`lucide-react`, `react-icons`, `@heroicons/react`) and gets back real icon names, import paths and a ready-to-paste `import` line.
+TrueIcon is an [MCP](https://modelcontextprotocol.io) server that gives AI coding assistants exact, version-correct icon references. Your assistant searches the icon packages your project actually uses (`lucide-react`, `react-icons`, `@heroicons/react`, `@phosphor-icons/react`, `@tabler/icons-react`, `iconoir-react`) and gets back real icon names, import paths and a ready-to-paste `import` line.
 
 ## Why
 
@@ -17,13 +17,16 @@ AI assistants often guess icon names. The guess can be an icon that never existe
 
 ## Supported providers
 
-| Provider id   | npm package        | Icon naming                                                      |
-| ------------- | ------------------ | ---------------------------------------------------------------- |
-| `lucide`      | `lucide-react`     | Lucide's file names, e.g. `trash-2` → `Trash2`                   |
-| `heroicons`   | `@heroicons/react` | `<icon>-<size>-<style>`, e.g. `trash-24-outline` → `TrashIcon`    |
-| `react-icons` | `react-icons`      | `<set>-<icon>`, e.g. `fa6-beer-mug-empty` → `FaBeerMugEmpty`      |
+| Provider id   | npm package             | Icon naming                                                                                              |
+| ------------- | ----------------------- | -------------------------------------------------------------------------------------------------------- |
+| `lucide`      | `lucide-react`          | Lucide's file names, e.g. `trash-2` → `Trash2`                                                           |
+| `heroicons`   | `@heroicons/react`      | `<icon>-<size>-<style>`, e.g. `trash-24-outline` → `TrashIcon`                                            |
+| `react-icons` | `react-icons`           | `<set>-<icon>`, e.g. `fa6-beer-mug-empty` → `FaBeerMugEmpty`                                              |
+| `phosphor`    | `@phosphor-icons/react` | `<icon>` for the regular weight, `<icon>-<weight>` otherwise, e.g. `trash-bold` → `TrashIcon` with `weight="bold"` |
+| `tabler`      | `@tabler/icons-react`   | Tabler's icon names, e.g. `trash` → `IconTrash`, `trash-filled` → `IconTrashFilled`                       |
+| `iconoir`     | `iconoir-react`         | `<icon>` for regular, `<icon>-solid` for solid, e.g. `trash-solid` → `TrashSolid`                          |
 
-Tools accept either the provider id or the npm package name (`"lucide"` or `"lucide-react"`). Usage snippets are for React.
+Tools accept either the provider id or the npm package name (`"lucide"` or `"lucide-react"`). Usage snippets are for React. Phosphor weights all share one component, so pass the record's `style` as the `weight` prop (e.g. `<TrashIcon weight="bold" />`); the usage snippet only shows the import.
 
 ## Install
 
@@ -73,7 +76,7 @@ TrueIcon looks for `.iconmcp.json` in the project directory. That is `$TRUEICON_
 | Field                   | Type   | Required | Meaning                                                                                  |
 | ----------------------- | ------ | -------- | ---------------------------------------------------------------------------------------- |
 | `providers`             | array  | yes      | Icon packages the project uses. `search_icons` searches all of them by default.          |
-| `providers[].package`   | string | yes      | npm package name: `lucide-react`, `react-icons` or `@heroicons/react`.                   |
+| `providers[].package`   | string | yes      | npm package name: `lucide-react`, `react-icons`, `@heroicons/react`, `@phosphor-icons/react`, `@tabler/icons-react` or `iconoir-react`. |
 | `providers[].version`   | string | no       | Exact version or npm range. If omitted, it is read from `package.json` (see below).      |
 
 - If the file is missing, no providers are configured. `search_icons` then only works when you pass `provider` explicitly, and `get_icon` still works.
@@ -188,7 +191,7 @@ Searches the index and returns ranked matches with import statements.
 | `query`    | string  | yes      | What the icon should depict, e.g. `"trash"`                                          |
 | `provider` | string  | no       | Provider id or package. Default: every provider in `.iconmcp.json`                   |
 | `version`  | string  | no       | Version or range. Default: resolved as described in [Versions](#versions)            |
-| `style`    | string  | no       | Exact style filter: `"outline"` or `"solid"` (lucide icons are all `outline`)         |
+| `style`    | string  | no       | Exact style filter, e.g. `"outline"`, `"solid"`, `"filled"` (tabler) or a phosphor weight such as `"bold"`. Lucide icons are all `outline` |
 | `set`      | string  | no       | Exact set filter, e.g. `"fa6"` or `"md"` for react-icons                             |
 | `limit`    | integer | no       | Maximum results, 1 to 50, default 10                                                 |
 
@@ -237,7 +240,10 @@ Takes no arguments. Returns the providers configured in `.iconmcp.json` with the
   "registry": [
     { "id": "react-icons", "package": "react-icons", "description": "Aggregated icon sets (Font Awesome, Material, Feather, and more) as React components" },
     { "id": "lucide", "package": "lucide-react", "description": "Lucide icons as React components" },
-    { "id": "heroicons", "package": "@heroicons/react", "description": "Heroicons by the Tailwind CSS team as React components" }
+    { "id": "heroicons", "package": "@heroicons/react", "description": "Heroicons by the Tailwind CSS team as React components" },
+    { "id": "phosphor", "package": "@phosphor-icons/react", "description": "Phosphor icons in six weights (thin, light, regular, bold, fill, duotone) as React components" },
+    { "id": "tabler", "package": "@tabler/icons-react", "description": "Tabler icons (outline and filled) as React components" },
+    { "id": "iconoir", "package": "iconoir-react", "description": "Iconoir icons (regular and solid) as React components" }
   ]
 }
 ```
@@ -348,9 +354,9 @@ CI runs lint, typecheck and tests on Node 20 and 22 for every push and pull requ
 
 1. **Register it** in `src/providers/registry.ts` with a stable `id`, the npm `package` and a short `description`.
 2. **Write an adapter** in `src/providers/adapters/<provider>.ts` that exports `parseIcons(packageDir: string): RawIcon[]` (see `src/providers/adapter.ts`). It gets the extracted package directory and returns one `RawIcon` per icon:
-   - `name`: kebab-case and **unique within the package**, because it becomes part of the record id. Use `toKebabCase` from `adapter.ts`. If the package has variants with clashing component names, add the variant to the name, as the heroicons and react-icons adapters do.
+   - `name`: kebab-case and **unique within the package**, because it becomes part of the record id. Use `toKebabCase` from `adapter.ts`. If the package has variants with clashing component names, add the variant to the name, as the heroicons, react-icons, phosphor and iconoir adapters do.
    - `importName` and `importPath`: the exact export and module specifier a user would import.
-   - `svg`: the inner SVG markup. `LiteralCursor` (`src/providers/jsLiteral.ts`) parses JS object and array literals without executing code. `toSvgAttrs` and `renderSvg` (`src/providers/svg.ts`) turn React props into SVG markup.
+   - `svg`: the inner SVG markup. `LiteralCursor` (`src/providers/jsLiteral.ts`) parses JS object and array literals without executing code. `toSvgAttrs` and `renderSvg` (`src/providers/svg.ts`) turn React props into SVG markup, and `parseCreateElement` reads compiled `createElement(...)` trees.
    - Optional `style`, `set`, `categories` and `tags`.
    - Put a comment at the top of the adapter describing the package's file layout, as the existing adapters do.
 3. **Wire it up** in `src/providers/adapters/index.ts` by adding it to `ADAPTERS` under the provider id.

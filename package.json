@@ -20,7 +20,10 @@
     "icons",
     "lucide",
     "heroicons",
-    "react-icons"
+    "react-icons",
+    "phosphor",
+    "tabler",
+    "iconoir"
   ],
   "type": "module",
   "bin": {

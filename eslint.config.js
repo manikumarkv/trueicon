@@ -2,7 +2,8 @@ import js from "@eslint/js";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist/", "coverage/", "node_modules/"] },
+  // tests/fixtures mirrors third-party build output (including minified code).
+  { ignores: ["dist/", "coverage/", "node_modules/", "tests/fixtures/"] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
 );
