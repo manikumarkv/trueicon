@@ -1,6 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
-// Placeholder health-check tool. Real icon tools will be added alongside it in later phases.
+// Health-check tool.
 export function registerPingTool(server: McpServer): void {
   server.registerTool(
     "ping",
