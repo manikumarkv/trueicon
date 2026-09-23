@@ -1,0 +1,35 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.manikumarkv/trueicon",
+  "title": "TrueIcon",
+  "description": "Lets AI coding assistants search the icon packages actually installed in your project.",
+  "repository": {
+    "url": "https://github.com/manikumarkv/trueicon",
+    "source": "github"
+  },
+  "version": "0.1.1",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "trueicon",
+      "version": "0.1.1",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "TRUEICON_PROJECT_DIR",
+          "description": "Absolute path to the project whose icon packages to search. Defaults to the working directory.",
+          "isRequired": false,
+          "format": "string"
+        },
+        {
+          "name": "TRUEICON_CACHE",
+          "description": "Directory for the downloaded icon package cache. Defaults to ~/.trueicon/cache.",
+          "isRequired": false,
+          "format": "filepath"
+        }
+      ]
+    }
+  ]
+}

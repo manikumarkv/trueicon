@@ -1,9 +1,27 @@
 {
   "name": "trueicon",
-  "version": "0.1.0",
+  "mcpName": "io.github.manikumarkv/trueicon",
+  "version": "0.1.1",
   "description": "MCP server that lets AI coding assistants search the icon packages actually installed in your project.",
   "license": "MIT",
   "author": "manikumarkv",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/manikumarkv/trueicon.git"
+  },
+  "homepage": "https://github.com/manikumarkv/trueicon#readme",
+  "bugs": {
+    "url": "https://github.com/manikumarkv/trueicon/issues"
+  },
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "icons",
+    "lucide",
+    "heroicons",
+    "react-icons"
+  ],
   "type": "module",
   "bin": {
     "trueicon": "dist/index.js"
