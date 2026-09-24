@@ -1,0 +1,18 @@
+[
+  {"expect":["trash-2"],"query":"trash can","top":1},
+  {"expect":["trash-2"],"query":"trash","top":1},
+  {"expect":["trash-2"],"query":"  trash   can ","top":1},
+  {"expect":["shopping-cart"],"query":"shopping cart","top":1},
+  {"expect":["shopping-cart"],"query":"cart","top":3},
+  {"expect":["arrow-right"],"query":"arrow right","top":3},
+  {"expect":["circle-user-round"],"query":"user profile","top":3},
+  {"expect":["trash-2"],"query":"detele","top":3},
+  {"expect":["trash-2"],"query":"bin","top":3},
+  {"expect":["trash-2"],"query":"garbage","top":3},
+  {"expect":["trash-2"],"query":"garbage can","top":3},
+  {"expect":["trash-2"],"query":"rubbish","top":3},
+  {"expect":["square-dashed-kanban"],"query":"kanban","top":3},
+  {"expect":["square-dashed-kanban"],"query":"dashed","top":3},
+  {"expect":["car-taxi-front"],"query":"taxi","top":3},
+  {"expect":[],"query":"zzzzqqq"}
+]
