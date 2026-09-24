@@ -119,8 +119,27 @@ describe("searchIcons", () => {
     expect(searchIcons(records, "  trash   can ", { provider: "lucide" })).toEqual(results);
   });
 
-  it("requires every token of a multi-word query to match", () => {
-    expect(searchIcons(records, "trash zzzzqqq")).toEqual([]);
+  it("does not let unmatched tokens veto good matches", () => {
+    // "zzzzqqq" matches nothing, but the trash icons still come back instead of [].
+    const results = searchIcons(records, "trash zzzzqqq", { provider: "lucide" });
+    expect(results.length).toBeGreaterThan(0);
+    expect(results[0]?.record.importName).toBe("Trash2");
+  });
+
+  it("ranks a perfect single-token match above loose matches on every token", () => {
+    // Real-world regression: on the full lucide index, "trash can" returned
+    // square-dashed-kanban ("kanban" ~= "can", "dashed" ~= "trash") while the
+    // actual trash icons were excluded because "can" matches none of their
+    // keywords (trash/delete/remove/bin).
+    const recs = [
+      record("trash", "Trash", { keywords: ["trash", "delete", "remove", "bin"] }),
+      record("square-dashed-kanban", "SquareDashedKanban", {
+        keywords: ["square", "dashed", "kanban", "kanban-square-dashed"],
+        tags: ["kanban-square-dashed"],
+      }),
+    ];
+    const results = searchIcons(recs, "trash can");
+    expect(results.map((r) => r.record.name)).toEqual(["trash", "square-dashed-kanban"]);
   });
 
   it("tolerates typos within multi-word queries", () => {

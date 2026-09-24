@@ -22,7 +22,11 @@ export interface SearchOptions {
 
 export interface SearchResult {
   record: IconRecord;
-  /** Fuse.js score: 0 is a perfect match, 1 is no match. */
+  /**
+   * Best per-token Fuse.js score: 0 is a perfect match, 1 is no match. For
+   * multi-word queries this is the score of the closest-matching token; see
+   * {@link searchIcons} for how coverage across tokens breaks ties.
+   */
   score: number;
 }
 
@@ -60,8 +64,13 @@ function matches(value: string | undefined, filter: string | undefined): boolean
 
 /**
  * Filters records by provider/style/set exactly, then ranks them against the query with Fuse.js.
- * Multi-word queries are searched token by token: only records matching every token are kept,
- * ranked by their mean per-token score.
+ *
+ * Multi-word queries are searched token by token. A record is a candidate when it matches
+ * at least one token; ranking is by the best per-token score first, then by how many tokens
+ * matched, then by the mean matched score. Requiring every token to match (a hard AND) was
+ * tried and rejected: on real indexes it excludes the right icons whenever one token is a
+ * near-synonym absent from the index ("can" vs keywords trash/delete/bin), while unrelated
+ * icons slip through on loose fuzzy matches of every token ("kanban" ~= "can").
  */
 export function searchIcons(records: readonly IconRecord[], query: string, options: SearchOptions = {}): SearchResult[] {
   const tokens = query.trim().split(/\s+/).filter(Boolean);
@@ -71,18 +80,30 @@ export function searchIcons(records: readonly IconRecord[], query: string, optio
     (r) => matches(r.provider, provider) && matches(r.style, style) && matches(r.set, set),
   );
   const fuse = new Fuse(filtered, FUSE_OPTIONS);
-  const perToken = tokens.map(
-    (token) => new Map(fuse.search(token).map((result) => [result.item, result.score ?? 0] as const)),
-  );
-  const [first, ...rest] = perToken;
-  // Iterate in the first token's ranked order so ties keep Fuse's ordering (sort is stable).
-  const results: SearchResult[] = [];
-  for (const [record, score] of first!) {
-    const others = rest.map((scores) => scores.get(record));
-    if (others.some((s) => s === undefined)) continue;
-    const total = others.reduce<number>((sum, s) => sum + s!, score);
-    results.push({ record, score: total / tokens.length });
+  const stats = new Map<IconRecord, { best: number; matched: number; total: number }>();
+  for (const token of tokens) {
+    for (const result of fuse.search(token)) {
+      const score = result.score ?? 0;
+      const st = stats.get(result.item);
+      if (st) {
+        st.matched += 1;
+        st.total += score;
+        if (score < st.best) st.best = score;
+      } else {
+        stats.set(result.item, { best: score, matched: 1, total: score });
+      }
+    }
   }
-  results.sort((a, b) => a.score - b.score);
-  return limit === undefined ? results : results.slice(0, Math.max(0, limit));
+  // Sort is stable, so full ties keep token order: matches for earlier query
+  // tokens were inserted first and stay ahead.
+  const ranked = [...stats]
+    .map(([record, st]): SearchResult & { matched: number; mean: number } => ({
+      record,
+      score: st.best,
+      matched: st.matched,
+      mean: st.total / st.matched,
+    }))
+    .sort((a, b) => a.score - b.score || b.matched - a.matched || a.mean - b.mean)
+    .map(({ record, score }): SearchResult => ({ record, score }));
+  return limit === undefined ? ranked : ranked.slice(0, Math.max(0, limit));
 }
