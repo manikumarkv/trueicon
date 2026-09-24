@@ -17,11 +17,11 @@ The helper script `.claude/skills/release/release.mjs` does the file edits and c
 
 ## 1. Prepare the release on a branch
 
-Hooks in this setup block commits to `main`, so work on a branch and merge by PR.
+Hooks in this setup block commits to `main` and to `release/*` branches, so use a `chore/release-vX.Y.Z` branch and merge by PR.
 
 ```sh
 git switch main && git pull
-git switch -c release/vX.Y.Z
+git switch -c chore/release-vX.Y.Z
 node .claude/skills/release/release.mjs bump <patch|minor|major|x.y.z>
 node .claude/skills/release/release.mjs check
 mcp-publisher validate

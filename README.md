@@ -44,7 +44,7 @@ npm i -g trueicon
 trueicon
 ```
 
-`trueicon` is a stdio MCP server. Your MCP client starts it; running it by hand only prints `trueicon: v0.2.0 running on stdio` to stderr and waits for JSON-RPC on stdin.
+`trueicon` is a stdio MCP server. Your MCP client starts it; running it by hand only prints `trueicon: v<version> running on stdio` to stderr and waits for JSON-RPC on stdin.
 
 ## Quick start
 
@@ -317,7 +317,7 @@ The first time a tool needs `package@major.minor`, TrueIcon does the following:
 2. It parses the package's shipped files with the provider's adapter. Nothing is executed. Icons are read from the compiled source.
 3. It writes `index.json` (one record per icon) and `meta.json` (exact version, synonyms hash, index format, build time).
 
-Later calls only read `index.json`. Package files are never touched at query time, and your `node_modules` is never read or modified. If several tool calls need the same index at once, they share one download.
+Later calls only read `index.json`. Package files are never touched at query time. From your `node_modules`, TrueIcon only reads each icon package's `package.json` to get the installed version, and it never modifies anything there. If several tool calls need the same index at once, they share one download.
 
 The cache root is `~/.trueicon/cache`, or `$TRUEICON_CACHE` if set:
 
