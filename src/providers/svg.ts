@@ -57,6 +57,8 @@ const CASE_SENSITIVE_ATTRS = new Set([
   "calcMode",
   "keyTimes",
   "keySplines",
+  "requiredExtensions",
+  "systemLanguage",
 ]);
 
 const SPECIAL_ATTRS: Record<string, string> = {

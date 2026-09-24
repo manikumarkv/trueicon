@@ -1,4 +1,7 @@
 import type { ParseIcons } from "../adapter.js";
+import { parseIcons as parseAntDesign } from "./antdesign.js";
+import { parseIcons as parseCarbon } from "./carbon.js";
+import { parseIcons as parseFluentUi } from "./fluentui.js";
 import { parseIcons as parseHeroicons } from "./heroicons.js";
 import { parseIcons as parseIconoir } from "./iconoir.js";
 import { parseIcons as parseLucide } from "./lucide.js";
@@ -14,4 +17,7 @@ export const ADAPTERS: Readonly<Record<string, ParseIcons>> = {
   phosphor: parsePhosphor,
   tabler: parseTabler,
   iconoir: parseIconoir,
+  fluentui: parseFluentUi,
+  carbon: parseCarbon,
+  antdesign: parseAntDesign,
 };
