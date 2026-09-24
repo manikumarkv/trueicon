@@ -4,7 +4,7 @@ import { ensureIndex } from "../config/ensureIndex.js";
 import { CONFIG_FILE } from "../config/loadConfig.js";
 import { getProvider, type Provider } from "../providers/registry.js";
 import { loadIndex, searchIcons, searchIconsHybrid, type SearchResult } from "../search/search.js";
-import { getEmbedder } from "../semantic/embeddings.js";
+import { getEmbedder, isTransformersMissing, TRANSFORMERS_MISSING_WARNING } from "../semantic/embeddings.js";
 import {
   errorMessage,
   jsonToolResult,
@@ -52,24 +52,6 @@ function clampLimit(limit: number | undefined): number {
   if (limit === undefined || !Number.isFinite(limit)) return DEFAULT_LIMIT;
   return Math.min(MAX_LIMIT, Math.max(1, Math.floor(limit)));
 }
-
-/**
- * True when the dynamic import of @huggingface/transformers failed because the optional
- * peer dependency is not installed (as opposed to, say, a failed model download).
- */
-export function isTransformersMissing(error: unknown): boolean {
-  const code = (error as { code?: unknown } | null)?.code;
-  const message = errorMessage(error);
-  return (
-    (code === "ERR_MODULE_NOT_FOUND" || message.includes("Cannot find package")) &&
-    message.includes("@huggingface/transformers")
-  );
-}
-
-export const TRANSFORMERS_MISSING_WARNING =
-  "Semantic search is enabled but @huggingface/transformers is not installed. It is an optional peer " +
-  "dependency (about a 400MB one-time install, plus a ~90MB model download on first use). " +
-  "Run `npm install @huggingface/transformers` and re-run; using keyword search for now";
 
 function toHit({ record, score }: SearchResult): SearchIconsHit {
   return {

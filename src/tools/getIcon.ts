@@ -17,7 +17,7 @@ export interface GetIconInput {
   version?: string;
 }
 
-export type GetIconOutput = IconRecord & { usage: string };
+export type GetIconOutput = IconRecord & { usage: string; warnings?: string[] };
 
 function findRecord(records: readonly IconRecord[], name: string): IconRecord | undefined {
   const exact = records.find((r) => r.name === name || r.importName === name);
@@ -47,7 +47,9 @@ export async function getIconTool(input: GetIconInput, ctx: ToolContext): Promis
     );
   }
 
-  const { cacheDir } = await ensureIndex({
+  // With semantic on but @huggingface/transformers missing, ensureIndex falls back to a
+  // keyword-only index and reports why; a name lookup never needs vectors anyway.
+  const { cacheDir, warning } = await ensureIndex({
     cacheRoot: ctx.cacheRoot,
     providerId: provider.id,
     packageName: provider.package,
@@ -58,7 +60,8 @@ export async function getIconTool(input: GetIconInput, ctx: ToolContext): Promis
   const { records } = await loadIndex(cacheDir);
   const record = findRecord(records, name);
   if (!record) throw new Error(`Icon "${name}" not found in ${provider.id} (${provider.package}@${version})`);
-  return { ...record, usage: usageSnippet(record) };
+  const icon = { ...record, usage: usageSnippet(record) };
+  return warning === undefined ? icon : { ...icon, warnings: [warning] };
 }
 
 export function registerGetIconTool(server: McpServer, locateProject: ProjectLocator): void {

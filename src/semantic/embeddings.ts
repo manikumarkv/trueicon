@@ -44,3 +44,20 @@ export function getEmbedder(): Promise<SemanticEmbedder> {
   })();
   return cached;
 }
+
+/**
+ * True when the dynamic import of @huggingface/transformers failed because the optional
+ * peer dependency is not installed (as opposed to, say, a failed model download).
+ */
+export function isTransformersMissing(error: unknown): boolean {
+  const code = (error as { code?: unknown } | null)?.code;
+  const message = error instanceof Error ? error.message : String(error);
+  return (
+    (code === "ERR_MODULE_NOT_FOUND" || message.includes("Cannot find package")) &&
+    message.includes("@huggingface/transformers")
+  );
+}
+
+export const TRANSFORMERS_MISSING_WARNING =
+  "Semantic search needs @huggingface/transformers (~400MB one-time download); " +
+  "run `npm i @huggingface/transformers` to enable";

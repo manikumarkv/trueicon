@@ -98,7 +98,7 @@ Semantic search runs on [`@huggingface/transformers`](https://www.npmjs.com/pack
 npm install @huggingface/transformers
 ```
 
-If the flag is on but the package is missing, `search_icons` falls back to keyword search and returns a warning with this command.
+If the flag is on but the package is missing, `search_icons` and `get_icon` fall back to keyword-only indexes and return a one-line warning with the install command.
 
 Toggling the flag rebuilds the indexes once (vectors are stored in `index.json` alongside each record, and `meta.json` records the embedding model). It stays fully local: no data leaves your machine. `TRUEICON_SEMANTIC=1` (or `0`) overrides the flag for one-off runs.
 
