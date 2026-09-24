@@ -6,6 +6,7 @@ import { META_FILE, buildIndexFromPackage } from "../src/indexer/buildIndex.js";
 import type { IndexMeta } from "../src/indexer/types.js";
 import {
   getEmbedder,
+  isTransformersInstalled,
   isTransformersMissing,
   TRANSFORMERS_MISSING_WARNING,
   type SemanticEmbedder,
@@ -21,6 +22,7 @@ import { setUpToolEnv, type ToolEnv } from "./helpers/toolEnv.js";
 vi.mock("../src/semantic/embeddings.js", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../src/semantic/embeddings.js")>()),
   getEmbedder: vi.fn(),
+  isTransformersInstalled: vi.fn(),
 }));
 // The tool env pre-builds every index, so any download means a fallback went wrong.
 vi.mock("../src/cache/downloader.js", async (importOriginal) => ({
@@ -62,6 +64,7 @@ afterAll(() => {
 });
 beforeEach(() => {
   vi.mocked(getEmbedder).mockReset();
+  vi.mocked(isTransformersInstalled).mockReset().mockReturnValue(true);
   vi.mocked(downloadPackage).mockClear();
 });
 
@@ -89,6 +92,10 @@ describe("semantic flag off", () => {
 describe("semantic flag on, @huggingface/transformers missing", () => {
   beforeAll(() => {
     process.env.TRUEICON_SEMANTIC = "1";
+  });
+
+  beforeEach(() => {
+    vi.mocked(isTransformersInstalled).mockReturnValue(false);
   });
 
   it("search_icons falls back to keyword search with the install hint", async () => {
@@ -164,6 +171,20 @@ describe("semantic flag on, @huggingface/transformers present", () => {
     const icon = await getIconTool({ name: "Trash2", provider: "lucide" }, ctx);
     expect(icon.importName).toBe("Trash2");
     expect(icon.warnings).toBeUndefined();
+    expect(lucideMeta(env).embeddingModel).toBeDefined();
+    expect(downloadPackage).not.toHaveBeenCalled();
+  });
+
+  it("get_icon still warns on every call once the package goes missing", async () => {
+    vi.mocked(isTransformersInstalled).mockReturnValue(false);
+    vi.mocked(getEmbedder).mockRejectedValue(missingPackageError());
+    for (let call = 0; call < 2; call++) {
+      const icon = await getIconTool({ name: "Trash2", provider: "lucide" }, ctx);
+      expect(icon.importName).toBe("Trash2");
+      expect(icon.warnings).toEqual([TRANSFORMERS_MISSING_WARNING]);
+    }
+    // Served from the cached vector index: no embedder load, no download.
+    expect(getEmbedder).not.toHaveBeenCalled();
     expect(lucideMeta(env).embeddingModel).toBeDefined();
     expect(downloadPackage).not.toHaveBeenCalled();
   });

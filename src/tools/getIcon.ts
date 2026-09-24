@@ -6,6 +6,7 @@ import type { IconRecord } from "../indexer/types.js";
 import { toKebabCase } from "../providers/adapter.js";
 import { getProvider } from "../providers/registry.js";
 import { loadIndex } from "../search/search.js";
+import { isTransformersInstalled, TRANSFORMERS_MISSING_WARNING } from "../semantic/embeddings.js";
 import { jsonToolResult, resolveContext, resolveSemanticSearch, resolveVersion, usageSnippet, type ToolContext } from "./context.js";
 import type { ProjectLocator } from "./projectLocator.js";
 
@@ -49,19 +50,25 @@ export async function getIconTool(input: GetIconInput, ctx: ToolContext): Promis
 
   // With semantic on but @huggingface/transformers missing, ensureIndex falls back to a
   // keyword-only index and reports why; a name lookup never needs vectors anyway.
+  const semantic = resolveSemanticSearch(projectConfig);
   const { cacheDir, warning } = await ensureIndex({
     cacheRoot: ctx.cacheRoot,
     providerId: provider.id,
     packageName: provider.package,
     version,
     synonyms: ctx.synonyms,
-    semantic: resolveSemanticSearch(projectConfig),
+    semantic,
   });
   const { records } = await loadIndex(cacheDir);
   const record = findRecord(records, name);
   if (!record) throw new Error(`Icon "${name}" not found in ${provider.id} (${provider.package}@${version})`);
   const icon = { ...record, usage: usageSnippet(record) };
-  return warning === undefined ? icon : { ...icon, warnings: [warning] };
+  // Like search_icons, warn on every call while the peer dependency is missing, even when a
+  // cached index with vectors meant no fallback was needed.
+  const warnings = new Set<string>();
+  if (warning !== undefined) warnings.add(warning);
+  if (semantic && !isTransformersInstalled()) warnings.add(TRANSFORMERS_MISSING_WARNING);
+  return warnings.size === 0 ? icon : { ...icon, warnings: [...warnings] };
 }
 
 export function registerGetIconTool(server: McpServer, locateProject: ProjectLocator): void {

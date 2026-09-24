@@ -58,6 +58,20 @@ export function isTransformersMissing(error: unknown): boolean {
   );
 }
 
+/**
+ * Cheap per-call check that @huggingface/transformers is installed: resolves the module path
+ * only, without importing it or loading the model.
+ */
+export function isTransformersInstalled(): boolean {
+  try {
+    import.meta.resolve("@huggingface/transformers");
+    return true;
+  } catch (error) {
+    if (isTransformersMissing(error)) return false;
+    throw error;
+  }
+}
+
 export const TRANSFORMERS_MISSING_WARNING =
   "Semantic search needs @huggingface/transformers (~400MB one-time download); " +
   "run `npm i @huggingface/transformers` to enable";
