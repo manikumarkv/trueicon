@@ -13,7 +13,7 @@ export function makePackageDir(files: Record<string, string>): string {
   return root;
 }
 
-const lucideIcon = (importName: string, nodes: string) =>
+export const lucideIcon = (importName: string, nodes: string) =>
   `import createLucideIcon from '../createLucideIcon.js';\n\n` +
   `const ${importName} = createLucideIcon("${importName}", ${nodes});\n\n` +
   `export { ${importName} as default };\n`;
