@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
@@ -6,6 +7,7 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 // Smoke test against the COMPILED server: requires `npm run build` (tsc) to have run first
 // so that dist/index.js exists and reflects the current sources.
 const serverPath = fileURLToPath(new URL("../dist/index.js", import.meta.url));
+const { version } = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")) as { version: string };
 
 describe("trueicon MCP server (stdio)", () => {
   let client: Client;
@@ -22,7 +24,7 @@ describe("trueicon MCP server (stdio)", () => {
   });
 
   it("reports its name and version", () => {
-    expect(client.getServerVersion()).toMatchObject({ name: "trueicon", version: "0.2.0" });
+    expect(client.getServerVersion()).toMatchObject({ name: "trueicon", version });
   });
 
   it("lists the ping tool", async () => {
