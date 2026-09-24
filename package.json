@@ -1,7 +1,7 @@
 {
   "name": "trueicon",
   "mcpName": "io.github.manikumarkv/trueicon",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "MCP server that lets AI coding assistants search the icon packages actually installed in your project.",
   "license": "MIT",
   "author": "manikumarkv",
