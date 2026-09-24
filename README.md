@@ -339,6 +339,30 @@ npm run typecheck  # tsc --noEmit
 
 CI runs lint, typecheck and tests on Node 20 and 22 for every push and pull request.
 
+### Testing and debugging locally
+
+These scripts build the server and run it against `playground/`, a sample project that lists all 9 providers at their latest versions. They use a separate cache in `.cache/dev/`, so your real `~/.trueicon` cache is untouched.
+
+```sh
+# Call one tool and print the result
+npm run dev:call -- list_providers
+npm run dev:call -- search_icons query="trash can" limit=5
+npm run dev:call -- search_icons query=trash provider=lucide version=1.47.0
+npm run dev:call -- get_icon name=Trash2 provider=lucide
+
+# Open the MCP Inspector web UI on the local build
+npm run dev:inspect
+
+# Same, with the Node debugger on port 9229
+npm run dev:debug
+```
+
+- **Arguments** are `key=value` pairs. Numbers and booleans are parsed, so `limit=5` is sent as a number.
+- **Another project:** set `TRUEICON_PROJECT_DIR` to test against its `package.json` and `.iconmcp.json`, e.g. `TRUEICON_PROJECT_DIR=~/code/my-app npm run dev:inspect`.
+- **Rebuild indexes:** add `--fresh` to delete the dev cache first, e.g. `npm run dev:call -- --fresh search_icons query=trash`. Use it after changing an adapter.
+- **Breakpoints:** run `npm run dev:debug`, then in VS Code use **Debug: Attach to Node Process**, or open `chrome://inspect` in Chrome. Source maps are on, so breakpoints work in the `.ts` files under `src/`. Set them, then call a tool from the Inspector.
+- **Logging:** stdout carries the MCP protocol, so log with `console.error`. It shows in the terminal for `dev:call` and in the Inspector's server log for `dev:inspect`.
+
 ### Extending `synonyms.json`
 
 `src/synonyms/synonyms.json` maps a term to extra search terms:
