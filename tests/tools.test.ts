@@ -110,6 +110,9 @@ describe("getIconTool", () => {
     expect(icon.svg).toContain("<path");
     expect((await getIconTool({ name: "trash-2", provider: "lucide-react" }, ctx)).importName).toBe("Trash2");
     expect((await getIconTool({ name: "trash2", provider: "lucide" }, ctx)).importName).toBe("Trash2");
+    // Deprecated alias names resolve to the current icon.
+    expect((await getIconTool({ name: "TrashCan", provider: "lucide" }, ctx)).importName).toBe("Trash2");
+    expect((await getIconTool({ name: "trash-can", provider: "lucide" }, ctx)).importName).toBe("Trash2");
   });
 
   it("throws for unknown icons, naming the icon, provider and version", async () => {

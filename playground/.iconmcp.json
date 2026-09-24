@@ -1,0 +1,13 @@
+{
+  "providers": [
+    { "package": "lucide-react" },
+    { "package": "react-icons" },
+    { "package": "@heroicons/react" },
+    { "package": "@phosphor-icons/react" },
+    { "package": "@tabler/icons-react" },
+    { "package": "iconoir-react" },
+    { "package": "@fluentui/react-icons" },
+    { "package": "@carbon/icons-react" },
+    { "package": "@ant-design/icons" }
+  ]
+}

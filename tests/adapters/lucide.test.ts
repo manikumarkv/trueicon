@@ -52,3 +52,45 @@ describe("lucide adapter", () => {
     expect(alert.keywords).toEqual(["circle", "alert", "alert-circle"]);
   });
 });
+
+describe("lucide adapter, __iconNode format (later 0.x to 1.46)", () => {
+  const icons = parseIcons(join(import.meta.dirname, "..", "fixtures", "lucide-iconnode"));
+  const byName = new Map(icons.map((icon) => [icon.name, icon]));
+
+  it("parses icons, skipping alias modules and source maps", () => {
+    expect(icons.map((icon) => icon.name).sort()).toEqual(["square-activity", "trash-2"]);
+  });
+
+  it("takes the import name from the binding, not the kebab-case string argument", () => {
+    expect(byName.get("trash-2")).toMatchObject({
+      importName: "Trash2",
+      svg: '<path d="M3 6h18"/><path d="M10 11v6"/>',
+    });
+  });
+
+  it("adds alias modules to the target icon's tags", () => {
+    expect(byName.get("square-activity")?.tags).toEqual(["activity-square"]);
+  });
+});
+
+describe("lucide adapter, __iconData format (1.47+)", () => {
+  const icons = parseIcons(join(import.meta.dirname, "..", "fixtures", "lucide-v1"));
+  const byName = new Map(icons.map((icon) => [icon.name, icon]));
+
+  it("parses .mjs icon modules, skipping aliases, the barrel file and source maps", () => {
+    expect(icons.map((icon) => icon.name).sort()).toEqual(["face-slightly-smiling", "trash"]);
+  });
+
+  it("reads the import name and SVG nodes from __iconData", () => {
+    expect(byName.get("trash")).toMatchObject({
+      importName: "Trash",
+      importPath: "lucide-react",
+      svg: '<path d="M3 6h18"/><path d="M10 11v6"/>',
+    });
+  });
+
+  it("merges __iconData.aliases and alias modules into tags without duplicates", () => {
+    expect(byName.get("trash")?.tags).toEqual(["trash-2"]);
+    expect(byName.get("face-slightly-smiling")?.tags).toEqual(["smile"]);
+  });
+});

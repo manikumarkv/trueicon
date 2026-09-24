@@ -3,6 +3,7 @@ import { z } from "zod";
 import { ensureIndex } from "../config/ensureIndex.js";
 import { CONFIG_FILE, loadProjectConfig } from "../config/loadConfig.js";
 import type { IconRecord } from "../indexer/types.js";
+import { toKebabCase } from "../providers/adapter.js";
 import { getProvider } from "../providers/registry.js";
 import { loadIndex } from "../search/search.js";
 import { jsonToolResult, resolveContext, resolveVersion, usageSnippet, type ToolContext } from "./context.js";
@@ -21,7 +22,12 @@ function findRecord(records: readonly IconRecord[], name: string): IconRecord | 
   const exact = records.find((r) => r.name === name || r.importName === name);
   if (exact) return exact;
   const lower = name.toLowerCase();
-  return records.find((r) => r.name.toLowerCase() === lower || r.importName.toLowerCase() === lower);
+  const caseInsensitive = records.find((r) => r.name.toLowerCase() === lower || r.importName.toLowerCase() === lower);
+  if (caseInsensitive) return caseInsensitive;
+  // Deprecated or renamed icons are kept as alias tags on the current icon, e.g. lucide 1.47
+  // renamed trash-2 to trash, so "Trash2" resolves to the Trash record.
+  const kebab = toKebabCase(name);
+  return records.find((r) => r.tags.some((tag) => tag === lower || tag === kebab));
 }
 
 /** Looks up one icon by name or import name and returns its full record plus an import snippet. */
