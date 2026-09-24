@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 
 export const CONFIG_FILE = ".iconmcp.json";
 
@@ -58,22 +58,63 @@ export function loadProjectConfig(projectDir: string): ProjectConfig {
   return { providers };
 }
 
-/** Returns the version range declared for packageName in <projectDir>/package.json. */
-export function detectVersion(projectDir: string, packageName: string): string {
+/** Reads <projectDir>/package.json, or returns null when there is none. */
+function readPackageJson(projectDir: string): Record<string, unknown> | null {
   const path = join(projectDir, "package.json");
   let raw: unknown;
   try {
     raw = readJson(path);
   } catch (error) {
-    if (isMissing(error)) throw new Error(`No package.json found at ${path}`, { cause: error });
+    if (isMissing(error)) return null;
     throw error;
   }
   if (!isObject(raw)) throw new Error(`Invalid ${path}: expected a JSON object`);
+  return raw;
+}
 
-  for (const field of ["dependencies", "devDependencies"] as const) {
-    const deps = raw[field];
+const DEPENDENCY_FIELDS = ["dependencies", "devDependencies"] as const;
+
+/** Returns the version range declared for packageName in <projectDir>/package.json. */
+export function detectVersion(projectDir: string, packageName: string): string {
+  const pkg = readPackageJson(projectDir);
+  const path = join(projectDir, "package.json");
+  if (!pkg) throw new Error(`No package.json found at ${path}`);
+  for (const field of DEPENDENCY_FIELDS) {
+    const deps = pkg[field];
     const version = isObject(deps) ? deps[packageName] : undefined;
     if (typeof version === "string" && version.trim() !== "") return version;
   }
   throw new Error(`${packageName} is not listed in dependencies or devDependencies of ${path}`);
+}
+
+/**
+ * Returns the packages from `candidates` that <projectDir>/package.json lists in dependencies or
+ * devDependencies, in candidate order. A missing package.json lists nothing.
+ */
+export function detectListedPackages(projectDir: string, candidates: readonly string[]): string[] {
+  const pkg = readPackageJson(projectDir);
+  if (!pkg) return [];
+  const listed = new Set<string>();
+  for (const field of DEPENDENCY_FIELDS) {
+    const deps = pkg[field];
+    if (isObject(deps)) for (const name of Object.keys(deps)) listed.add(name);
+  }
+  return candidates.filter((name) => listed.has(name));
+}
+
+/**
+ * Returns the version of packageName installed in node_modules, looking in <projectDir> and then
+ * each parent directory, as Node's module resolution does (this covers hoisted monorepo installs).
+ * Returns null when it is not installed or its package.json has no version.
+ */
+export function detectInstalledVersion(projectDir: string, packageName: string): string | null {
+  for (let dir = projectDir; ; dir = dirname(dir)) {
+    try {
+      const raw = readJson(join(dir, "node_modules", packageName, "package.json"));
+      if (isObject(raw) && typeof raw.version === "string" && raw.version.trim() !== "") return raw.version;
+    } catch {
+      // Not installed here, or unreadable: keep looking further up.
+    }
+    if (dirname(dir) === dir) return null;
+  }
 }

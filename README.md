@@ -48,23 +48,17 @@ trueicon
 
 ## Quick start
 
-1. Add a `.iconmcp.json` to your project root that lists your icon packages:
+1. Register TrueIcon with your MCP client ([Claude Code](#claude-code), [Claude Desktop](#claude-desktop), or [VS Code and Cursor](#using-it-in-vs-code-and-cursor)).
+2. Ask your assistant for an icon.
 
-   ```json
-   {
-     "providers": [
-       { "package": "lucide-react" },
-       { "package": "@heroicons/react", "version": "2.1.5" }
-     ]
-   }
-   ```
+That's it for most projects. TrueIcon finds the icon packages your `package.json` lists and the versions installed in `node_modules`. The first search for each package downloads and indexes it, which takes a few seconds. Later searches use the local cache.
 
-2. Register TrueIcon with your MCP client ([Claude Code](#claude-code) or [Claude Desktop](#claude-desktop)).
-3. Ask your assistant for an icon. The first search for each package downloads and indexes it, which takes a few seconds. Later searches use the local cache.
+## Configuration
 
-## Configuration: `.iconmcp.json`
+### Which icon packages are searched
 
-TrueIcon looks for `.iconmcp.json` in the project directory. That is `$TRUEICON_PROJECT_DIR` if set, otherwise the server's working directory.
+- **By default**, every supported package listed in `dependencies` or `devDependencies` of your `package.json`.
+- **With `.iconmcp.json`** in the project, exactly the packages it lists. Use it to search only some of your icon packages, to add one your `package.json` doesn't list (for example one that comes in through a UI kit), or to pin a version.
 
 ```json
 {
@@ -78,20 +72,31 @@ TrueIcon looks for `.iconmcp.json` in the project directory. That is `$TRUEICON_
 
 | Field                   | Type   | Required | Meaning                                                                                  |
 | ----------------------- | ------ | -------- | ---------------------------------------------------------------------------------------- |
-| `providers`             | array  | yes      | Icon packages the project uses. `search_icons` searches all of them by default.          |
+| `providers`             | array  | yes      | Icon packages to search. When it lists any, `package.json` is not used to pick packages. |
 | `providers[].package`   | string | yes      | npm package name: `lucide-react`, `react-icons`, `@heroicons/react`, `@phosphor-icons/react`, `@tabler/icons-react`, `iconoir-react`, `@fluentui/react-icons`, `@carbon/icons-react` or `@ant-design/icons`. |
-| `providers[].version`   | string | no       | Exact version or npm range. If omitted, it is read from `package.json` (see below).      |
+| `providers[].version`   | string | no       | Exact version or npm range. Overrides the installed version (see [Versions](#versions)). |
 
-- If the file is missing, no providers are configured. `search_icons` then only works when you pass `provider` explicitly, and `get_icon` still works.
-- Unsupported packages in the list are skipped, and `search_icons` reports them as a warning.
+- Unsupported packages in `.iconmcp.json` are skipped, and `search_icons` reports them as a warning.
 - Invalid JSON or a malformed entry makes the tools return an error that names the file and the bad field.
+- If neither file names a supported package, `search_icons` returns an error that says which directory it looked in. You can still pass `provider` to a tool call.
+
+### Which directory is the project
+
+TrueIcon reads `package.json`, `.iconmcp.json` and `node_modules` from the project directory. It picks the first of:
+
+1. `$TRUEICON_PROJECT_DIR`, when set.
+2. A folder your MCP client shares with the server (MCP [roots](https://modelcontextprotocol.io/docs/concepts/roots)) that contains a `package.json` or `.iconmcp.json`. Clients that support roots, like VS Code, tell TrueIcon which folders you're working in, so it follows your open project without any setup.
+3. The server's working directory, when it contains one of those files. Claude Code starts servers in your project, so this is how it finds it.
+4. The first shared folder, else the working directory.
+
+`list_providers` shows the directory in use and which rule picked it, so you can check what your client does.
 
 ### Environment variables
 
-| Variable               | Default               | Purpose                                              |
-| ---------------------- | --------------------- | ---------------------------------------------------- |
-| `TRUEICON_PROJECT_DIR` | working directory     | Project root holding `.iconmcp.json` and `package.json` |
-| `TRUEICON_CACHE`       | `~/.trueicon/cache`   | Where downloaded packages and indexes are stored     |
+| Variable               | Default                              | Purpose                                              |
+| ---------------------- | ------------------------------------ | ---------------------------------------------------- |
+| `TRUEICON_PROJECT_DIR` | shared folder, else working directory | Project root holding `package.json` and `.iconmcp.json` |
+| `TRUEICON_CACHE`       | `~/.trueicon/cache`                  | Where downloaded packages and indexes are stored     |
 
 ## Versions
 
@@ -101,9 +106,10 @@ A provider's version is resolved in this order:
 
 1. The `version` argument passed to the tool call, if any.
 2. The provider's `version` in `.iconmcp.json`.
-3. The version range declared for the package in the project's `package.json`, checking `dependencies` first and then `devDependencies`.
+3. The version installed in `node_modules`, looking in the project directory and then each parent directory, so packages hoisted to a monorepo root are found.
+4. The version range declared for the package in the project's `package.json`, checking `dependencies` first and then `devDependencies`.
 
-If none of these is available, the tool asks you to pin the version or add the package to `package.json`. TrueIcon reads the declared range from `package.json`. It does not read `node_modules` or the lockfile. For a range, it indexes the range's base version: `^0.460.0` indexes `lucide-react@0.460.0`. For `a || b` ranges, only the first part counts. To match an exact installed version, pin it in `.iconmcp.json`.
+If none of these is available, the tool asks you to pin the version or add the package to `package.json`. TrueIcon doesn't read your lockfile, and it downloads its own copy of the package from npm rather than using the files in `node_modules`. For a range, it indexes the range's base version: `^0.460.0` indexes `lucide-react@0.460.0`. For `a || b` ranges, only the first part counts. Before you run `npm install`, that base version can be older than what you'll get, so pin it in `.iconmcp.json` if the exact version matters.
 
 ### Version policy
 
@@ -137,11 +143,11 @@ Or commit a `.mcp.json` at the project root to share it with your team:
 }
 ```
 
-Claude Code starts the server in your project directory, so it finds `.iconmcp.json` and `package.json` there. If it runs from somewhere else, add `"env": { "TRUEICON_PROJECT_DIR": "/absolute/path/to/project" }`.
+Claude Code starts the server in your project directory, so it finds your `package.json` there with no setup. If it runs from somewhere else, add `"env": { "TRUEICON_PROJECT_DIR": "/absolute/path/to/project" }`.
 
 ### Claude Desktop
 
-Claude Desktop doesn't start servers in your project directory, so set `TRUEICON_PROJECT_DIR`. Edit `claude_desktop_config.json`: `~/Library/Application Support/Claude/claude_desktop_config.json` on macOS, `%APPDATA%\Claude\claude_desktop_config.json` on Windows.
+Claude Desktop doesn't start servers in your project directory, so set `TRUEICON_PROJECT_DIR`. If your version of Claude Desktop shares folders with servers, TrueIcon uses those instead; `list_providers` shows which directory it picked. Edit `claude_desktop_config.json`: `~/Library/Application Support/Claude/claude_desktop_config.json` on macOS, `%APPDATA%\Claude\claude_desktop_config.json` on Windows.
 
 ```json
 {
@@ -192,7 +198,7 @@ Searches the index and returns ranked matches with import statements.
 | Argument   | Type    | Required | Description                                                                          |
 | ---------- | ------- | -------- | ------------------------------------------------------------------------------------ |
 | `query`    | string  | yes      | What the icon should depict, e.g. `"trash"`                                          |
-| `provider` | string  | no       | Provider id or package. Default: every provider in `.iconmcp.json`                   |
+| `provider` | string  | no       | Provider id or package. Default: every provider the project uses ([see Configuration](#which-icon-packages-are-searched)) |
 | `version`  | string  | no       | Version or range. Default: resolved as described in [Versions](#versions)            |
 | `style`    | string  | no       | Exact style filter, e.g. `"outline"`, `"solid"`, `"filled"` (tabler), `"regular"` (fluentui), `"two-tone"` (antdesign) or a phosphor weight such as `"bold"`. Lucide icons are all `outline`; base carbon icons have no style |
 | `set`      | string  | no       | Exact set filter, e.g. `"fa6"` or `"md"` for react-icons                             |
@@ -232,13 +238,15 @@ How search works:
 
 ### `list_providers`
 
-Takes no arguments. Returns the providers configured in `.iconmcp.json` with their resolved versions, plus every provider TrueIcon supports.
+Takes no arguments. Returns the project directory TrueIcon reads and how it was found, the providers the project uses with their resolved versions, and every provider TrueIcon supports.
 
 ```json
 {
+  "project": { "dir": "/Users/you/code/my-app", "source": "roots" },
+  "providersFrom": "package.json",
   "configured": [
-    { "id": "lucide", "package": "lucide-react", "version": "^0.460.0", "source": "package.json" },
-    { "id": "heroicons", "package": "@heroicons/react", "version": "2.1.5", "source": "iconmcp.json" }
+    { "id": "lucide", "package": "lucide-react", "version": "1.47.0", "source": "node_modules" },
+    { "id": "heroicons", "package": "@heroicons/react", "version": "^2.1.0", "source": "package.json" }
   ],
   "registry": [
     { "id": "react-icons", "package": "react-icons", "description": "Aggregated icon sets (Font Awesome, Material, Feather, and more) as React components" },
@@ -254,7 +262,9 @@ Takes no arguments. Returns the providers configured in `.iconmcp.json` with the
 }
 ```
 
-`source` is `"iconmcp.json"` or `"package.json"`. `version` and `source` are `null` when neither file provides a version. `id` is `null` for a configured package TrueIcon doesn't support.
+- `project.source` is `"TRUEICON_PROJECT_DIR"`, `"roots"` (a folder your MCP client shared) or `"cwd"` (the server's working directory). See [Which directory is the project](#which-directory-is-the-project).
+- `providersFrom` is `"iconmcp.json"`, `"package.json"`, or `null` when neither names a supported package.
+- Each provider's `source` says where its version came from: `"iconmcp.json"`, `"node_modules"` or `"package.json"`. `version` and `source` are `null` when none provides a version. `id` is `null` for a package in `.iconmcp.json` that TrueIcon doesn't support.
 
 ### `get_icon`
 
