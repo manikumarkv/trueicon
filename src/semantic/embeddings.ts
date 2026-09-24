@@ -1,3 +1,4 @@
+import { createRequire } from "node:module";
 import type { IconRecord } from "../indexer/types.js";
 
 /**
@@ -46,17 +47,25 @@ export function getEmbedder(): Promise<SemanticEmbedder> {
 }
 
 /**
- * True when the dynamic import of @huggingface/transformers failed because the optional
- * peer dependency is not installed (as opposed to, say, a failed model download).
+ * True when importing or resolving @huggingface/transformers failed because the optional
+ * peer dependency is not installed (as opposed to, say, a failed model download). Covers
+ * both the ESM import error and the CommonJS require.resolve error.
  */
 export function isTransformersMissing(error: unknown): boolean {
   const code = (error as { code?: unknown } | null)?.code;
   const message = error instanceof Error ? error.message : String(error);
   return (
-    (code === "ERR_MODULE_NOT_FOUND" || message.includes("Cannot find package")) &&
+    (code === "ERR_MODULE_NOT_FOUND" ||
+      code === "MODULE_NOT_FOUND" ||
+      message.includes("Cannot find package") ||
+      message.includes("Cannot find module")) &&
     message.includes("@huggingface/transformers")
   );
 }
+
+// createRequire rather than import.meta.resolve: the latter is unflagged only from Node 20.6,
+// while engines allows any Node 20.
+const require = createRequire(import.meta.url);
 
 /**
  * Cheap per-call check that @huggingface/transformers is installed: resolves the module path
@@ -64,7 +73,7 @@ export function isTransformersMissing(error: unknown): boolean {
  */
 export function isTransformersInstalled(): boolean {
   try {
-    import.meta.resolve("@huggingface/transformers");
+    require.resolve("@huggingface/transformers");
     return true;
   } catch (error) {
     if (isTransformersMissing(error)) return false;

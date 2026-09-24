@@ -196,6 +196,11 @@ describe("isTransformersMissing", () => {
     expect(isTransformersMissing(new Error("Cannot find package '@huggingface/transformers' imported from x"))).toBe(
       true,
     );
+    // CommonJS shape, as thrown by createRequire(...).resolve in isTransformersInstalled.
+    const cjsMissing = Object.assign(new Error("Cannot find module '@huggingface/transformers'"), {
+      code: "MODULE_NOT_FOUND",
+    });
+    expect(isTransformersMissing(cjsMissing)).toBe(true);
     const otherPackage = Object.assign(new Error("Cannot find package 'onnxruntime-node'"), {
       code: "ERR_MODULE_NOT_FOUND",
     });
