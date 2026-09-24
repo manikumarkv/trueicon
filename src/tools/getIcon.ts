@@ -7,6 +7,7 @@ import { toKebabCase } from "../providers/adapter.js";
 import { getProvider } from "../providers/registry.js";
 import { loadIndex } from "../search/search.js";
 import { jsonToolResult, resolveContext, resolveVersion, usageSnippet, type ToolContext } from "./context.js";
+import type { ProjectLocator } from "./projectLocator.js";
 
 export interface GetIconInput {
   /** Icon name ("trash-2") or import name ("Trash2"). */
@@ -59,7 +60,7 @@ export async function getIconTool(input: GetIconInput, ctx: ToolContext): Promis
   return { ...record, usage: usageSnippet(record) };
 }
 
-export function registerGetIconTool(server: McpServer): void {
+export function registerGetIconTool(server: McpServer, locateProject: ProjectLocator): void {
   server.registerTool(
     "get_icon",
     {
@@ -71,6 +72,6 @@ export function registerGetIconTool(server: McpServer): void {
         version: z.string().optional().describe("Package version or range; defaults to the project's version"),
       },
     },
-    (input) => jsonToolResult(() => getIconTool(input, resolveContext())),
+    (input) => jsonToolResult(async () => getIconTool(input, resolveContext(await locateProject()))),
   );
 }

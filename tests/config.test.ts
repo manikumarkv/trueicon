@@ -1,9 +1,9 @@
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, afterEach, describe, expect, it, vi } from "vitest";
 import { ensureIndex } from "../src/config/ensureIndex.js";
-import { detectVersion, loadProjectConfig } from "../src/config/loadConfig.js";
+import { detectInstalledVersion, detectListedPackages, detectVersion, loadProjectConfig } from "../src/config/loadConfig.js";
 import { indexKey, parseVersion, resolveIndexAction } from "../src/config/versions.js";
 import { buildIndex, hashSynonyms, INDEX_VERSION, writeIndex } from "../src/indexer/buildIndex.js";
 import type { IndexMeta, Synonyms } from "../src/indexer/types.js";
@@ -171,5 +171,61 @@ describe("ensureIndex", () => {
 
     expect(result).toEqual({ cacheDir: join(cacheRoot, `${packageName}@0.460`), action: "use" });
     expect(fetchSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe("detectListedPackages", () => {
+  const candidates = ["react-icons", "lucide-react", "@heroicons/react"];
+
+  it("returns the candidates listed in dependencies or devDependencies, in candidate order", () => {
+    const dir = makeProject({
+      "package.json": JSON.stringify({
+        dependencies: { "lucide-react": "^1.47.0", react: "^19.0.0" },
+        devDependencies: { "react-icons": "^5.3.0" },
+      }),
+    });
+    expect(detectListedPackages(dir, candidates)).toEqual(["react-icons", "lucide-react"]);
+  });
+
+  it("returns nothing without a package.json and throws on invalid JSON", () => {
+    expect(detectListedPackages(makeProject(), candidates)).toEqual([]);
+    expect(() => detectListedPackages(makeProject({ "package.json": "nope" }), candidates)).toThrow(/Invalid JSON/);
+  });
+});
+
+describe("detectInstalledVersion", () => {
+  // Writes node_modules/<pkg>/package.json under dir.
+  function install(dir: string, pkg: string, version: string): void {
+    const pkgDir = join(dir, "node_modules", pkg);
+    mkdirSync(pkgDir, { recursive: true });
+    writeFileSync(join(pkgDir, "package.json"), JSON.stringify({ name: pkg, version }));
+  }
+
+  it("reads the version installed in the project's node_modules, including scoped packages", () => {
+    const dir = makeProject();
+    install(dir, "lucide-react", "1.52.0");
+    install(dir, "@heroicons/react", "2.2.0");
+    expect(detectInstalledVersion(dir, "lucide-react")).toBe("1.52.0");
+    expect(detectInstalledVersion(dir, "@heroicons/react")).toBe("2.2.0");
+  });
+
+  it("finds packages hoisted to a parent directory, as in monorepos", () => {
+    const root = makeProject();
+    install(root, "lucide-react", "1.50.0");
+    const app = join(root, "apps", "web");
+    mkdirSync(app, { recursive: true });
+    expect(detectInstalledVersion(app, "lucide-react")).toBe("1.50.0");
+  });
+
+  it("prefers the nearest node_modules", () => {
+    const root = makeProject();
+    install(root, "lucide-react", "1.50.0");
+    const app = join(root, "apps", "web");
+    install(app, "lucide-react", "1.52.0");
+    expect(detectInstalledVersion(app, "lucide-react")).toBe("1.52.0");
+  });
+
+  it("returns null when the package is not installed", () => {
+    expect(detectInstalledVersion(makeProject(), "some-package-that-is-not-installed-anywhere")).toBeNull();
   });
 });

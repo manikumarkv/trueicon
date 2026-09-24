@@ -1,10 +1,20 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { ensureIndex } from "../config/ensureIndex.js";
-import { CONFIG_FILE, loadProjectConfig } from "../config/loadConfig.js";
+import { CONFIG_FILE } from "../config/loadConfig.js";
 import { getProvider, type Provider } from "../providers/registry.js";
 import { loadIndex, searchIcons, type SearchResult } from "../search/search.js";
-import { errorMessage, jsonToolResult, resolveContext, resolveVersion, usageSnippet, type ToolContext } from "./context.js";
+import {
+  errorMessage,
+  jsonToolResult,
+  noProvidersError,
+  resolveContext,
+  resolveProjectProviders,
+  resolveVersion,
+  usageSnippet,
+  type ToolContext,
+} from "./context.js";
+import type { ProjectLocator } from "./projectLocator.js";
 
 export const DEFAULT_LIMIT = 10;
 export const MAX_LIMIT = 50;
@@ -55,12 +65,15 @@ function toHit({ record, score }: SearchResult): SearchIconsHit {
   };
 }
 
-/** Searches the indexes of the requested (or all configured) providers and merges the ranked hits. */
+/**
+ * Searches the indexes of the requested provider, or of every provider the project uses (from
+ * .iconmcp.json, else detected in package.json), and merges the ranked hits.
+ */
 export async function searchIconsTool(input: SearchIconsInput, ctx: ToolContext): Promise<SearchIconsOutput> {
   const query = input.query?.trim() ?? "";
   if (!query) throw new Error("query must be a non-empty string");
 
-  const config = loadProjectConfig(ctx.projectDir);
+  const { config, packages } = resolveProjectProviders(ctx.projectDir);
   const warnings: string[] = [];
   let candidates: Provider[];
   if (input.provider !== undefined) {
@@ -68,14 +81,9 @@ export async function searchIconsTool(input: SearchIconsInput, ctx: ToolContext)
     if (!provider) throw new Error(`Unknown provider "${input.provider}"`);
     candidates = [provider];
   } else {
-    if (config.providers.length === 0) {
-      throw new Error(
-        `No icon providers configured. Create ${CONFIG_FILE} in ${ctx.projectDir} with a "providers" array, ` +
-          `e.g. {"providers":[{"package":"lucide-react"}]}, or pass "provider".`,
-      );
-    }
+    if (packages.length === 0) throw noProvidersError(ctx);
     candidates = [];
-    for (const { package: pkg } of config.providers) {
+    for (const pkg of packages) {
       const provider = getProvider(pkg);
       if (provider) candidates.push(provider);
       else warnings.push(`Skipping ${pkg}: not a supported icon provider`);
@@ -113,7 +121,7 @@ export async function searchIconsTool(input: SearchIconsInput, ctx: ToolContext)
   return warnings.length > 0 ? { results, warnings } : { results };
 }
 
-export function registerSearchIconsTool(server: McpServer): void {
+export function registerSearchIconsTool(server: McpServer, locateProject: ProjectLocator): void {
   server.registerTool(
     "search_icons",
     {
@@ -128,6 +136,6 @@ export function registerSearchIconsTool(server: McpServer): void {
         limit: z.number().int().optional().describe(`Maximum results (1-${MAX_LIMIT}, default ${DEFAULT_LIMIT})`),
       },
     },
-    (input) => jsonToolResult(() => searchIconsTool(input, resolveContext())),
+    (input) => jsonToolResult(async () => searchIconsTool(input, resolveContext(await locateProject()))),
   );
 }

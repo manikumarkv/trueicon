@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -154,5 +154,86 @@ describe("listProvidersTool", () => {
     } finally {
       scratch.cleanup();
     }
+  });
+});
+
+describe("automatic provider detection", () => {
+  // Writes node_modules/<pkg>/package.json into a scratch project.
+  function install(projectDir: string, pkg: string, version: string): void {
+    const pkgDir = join(projectDir, "node_modules", pkg);
+    mkdirSync(pkgDir, { recursive: true });
+    writeFileSync(join(pkgDir, "package.json"), JSON.stringify({ name: pkg, version }));
+  }
+
+  it("searches the supported providers listed in package.json when there is no .iconmcp.json", async () => {
+    const scratch = scratchContext({
+      "package.json": JSON.stringify({
+        dependencies: { "lucide-react": "0.460.0", react: "^19.0.0" },
+        devDependencies: { "@heroicons/react": "2.1.5" },
+      }),
+    });
+    try {
+      const { results, warnings } = await searchIconsTool({ query: "trash" }, scratch);
+      expect(warnings).toBeUndefined();
+      expect(new Set(results.map((r) => r.package))).toEqual(new Set(["lucide-react", "@heroicons/react"]));
+      expect(listProvidersTool(scratch)).toMatchObject({
+        providersFrom: "package.json",
+        configured: [
+          { id: "lucide", package: "lucide-react", version: "0.460.0", source: "package.json" },
+          { id: "heroicons", package: "@heroicons/react", version: "2.1.5", source: "package.json" },
+        ],
+      });
+    } finally {
+      scratch.cleanup();
+    }
+  });
+
+  it("uses the version installed in node_modules over the package.json range", async () => {
+    const scratch = scratchContext({ "package.json": JSON.stringify({ dependencies: { "lucide-react": "^0.1.0" } }) });
+    try {
+      install(scratch.projectDir, "lucide-react", "0.460.2");
+      expect(listProvidersTool(scratch).configured).toEqual([
+        { id: "lucide", package: "lucide-react", version: "0.460.2", source: "node_modules" },
+      ]);
+      // 0.460.2 is served by the cached 0.460 index, so this needs no download.
+      const { results } = await searchIconsTool({ query: "trash" }, scratch);
+      expect(results[0]).toMatchObject({ importName: "Trash2", version: "0.460.0" });
+      expect((await getIconTool({ name: "Trash2", provider: "lucide" }, scratch)).importName).toBe("Trash2");
+    } finally {
+      scratch.cleanup();
+    }
+  });
+
+  it("lets .iconmcp.json choose the providers and pin versions over node_modules", () => {
+    const scratch = scratchContext({
+      ".iconmcp.json": JSON.stringify({ providers: [{ package: "lucide-react", version: "0.460.0" }] }),
+      "package.json": JSON.stringify({ dependencies: { "lucide-react": "^1.0.0", "@heroicons/react": "2.1.5" } }),
+    });
+    try {
+      install(scratch.projectDir, "lucide-react", "1.47.0");
+      expect(listProvidersTool(scratch)).toMatchObject({
+        providersFrom: "iconmcp.json",
+        configured: [{ id: "lucide", package: "lucide-react", version: "0.460.0", source: "iconmcp.json" }],
+      });
+    } finally {
+      scratch.cleanup();
+    }
+  });
+
+  it("explains where it looked when the project uses no supported icon package", async () => {
+    const scratch = scratchContext({ "package.json": JSON.stringify({ dependencies: { react: "^19.0.0" } }) });
+    try {
+      const fromCwd = { ...scratch, projectSource: "cwd" as const };
+      await expect(searchIconsTool({ query: "trash" }, fromCwd)).rejects.toThrow(
+        /No icon packages found in .*working directory.*TRUEICON_PROJECT_DIR.*lucide-react.*\.iconmcp\.json/,
+      );
+      expect(listProvidersTool(scratch)).toMatchObject({ providersFrom: null, configured: [] });
+    } finally {
+      scratch.cleanup();
+    }
+  });
+
+  it("reports the project directory and how it was found", () => {
+    expect(listProvidersTool(ctx).project).toEqual({ dir: env.projectDir, source: "TRUEICON_PROJECT_DIR" });
   });
 });
