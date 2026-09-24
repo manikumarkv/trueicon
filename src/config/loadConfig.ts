@@ -10,6 +10,12 @@ export interface ProviderConfig {
 
 export interface ProjectConfig {
   providers: ProviderConfig[];
+  /**
+   * Opt-in semantic search: when true, indexes embed every icon with a local
+   * embedding model (~90MB download on first use) and search_icons merges
+   * cosine-similarity ranking with the keyword ranking. Default false.
+   */
+  semantic?: boolean;
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -45,6 +51,10 @@ export function loadProjectConfig(projectDir: string): ProjectConfig {
   if (!isObject(raw) || !Array.isArray(raw.providers)) {
     throw new Error(`Invalid ${path}: expected an object with a "providers" array`);
   }
+  const semantic = raw.semantic;
+  if (semantic !== undefined && typeof semantic !== "boolean") {
+    throw new Error(`Invalid ${path}: "semantic" must be a boolean when set`);
+  }
   const providers = raw.providers.map((entry: unknown, i): ProviderConfig => {
     if (!isObject(entry) || typeof entry.package !== "string" || entry.package.trim() === "") {
       throw new Error(`Invalid ${path}: providers[${i}].package must be a non-empty string`);
@@ -55,7 +65,7 @@ export function loadProjectConfig(projectDir: string): ProjectConfig {
     }
     return { package: entry.package, version: entry.version };
   });
-  return { providers };
+  return { providers, semantic };
 }
 
 /** Reads <projectDir>/package.json, or returns null when there is none. */

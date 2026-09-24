@@ -29,17 +29,19 @@ export function indexKey(packageName: string, version: string): string {
   return `${packageName}@${major}.${minor}`;
 }
 
-/** Decides whether a cached index can serve requestedVersion with the current synonyms. */
+/** Decides whether a cached index can serve requestedVersion with the current synonyms and embedding model. */
 export function resolveIndexAction(
   requestedVersion: string,
   meta: IndexMeta | null,
   currentSynonymsHash: string,
+  embeddingModel: string | null = null,
 ): IndexAction {
   if (meta === null) return "missing";
   const requested = parseVersion(requestedVersion);
   const cached = parseVersion(meta.version);
   const sameMinor = cached.major === requested.major && cached.minor === requested.minor;
-  return sameMinor && meta.synonymsHash === currentSynonymsHash && meta.indexVersion === INDEX_VERSION
+  const sameModel = (meta.embeddingModel ?? null) === embeddingModel;
+  return sameMinor && meta.synonymsHash === currentSynonymsHash && meta.indexVersion === INDEX_VERSION && sameModel
     ? "use"
     : "rebuild";
 }

@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { downloadPackage } from "../cache/downloader.js";
 import { buildIndexFromPackage, hashSynonyms, META_FILE } from "../indexer/buildIndex.js";
 import type { IndexMeta, Synonyms } from "../indexer/types.js";
+import { EMBEDDING_MODEL, getEmbedder } from "../semantic/embeddings.js";
 import { indexKey, parseVersion, resolveIndexAction, type IndexAction } from "./versions.js";
 
 export interface EnsureIndexOptions {
@@ -12,6 +13,8 @@ export interface EnsureIndexOptions {
   /** Exact version or npm range, e.g. "^0.460.0". */
   version: string;
   synonyms: Synonyms;
+  /** When true the index is built with embedding vectors (downloads the model on first use). */
+  semantic: boolean;
 }
 
 export interface EnsureIndexResult {
@@ -42,14 +45,23 @@ export function ensureIndex(opts: EnsureIndexOptions): Promise<EnsureIndexResult
 }
 
 async function ensureIndexAt(cacheDir: string, opts: EnsureIndexOptions): Promise<EnsureIndexResult> {
-  const { cacheRoot, providerId, packageName, version, synonyms } = opts;
-  const action = resolveIndexAction(version, await readMeta(cacheDir), hashSynonyms(synonyms));
+  const { cacheRoot, providerId, packageName, version, synonyms, semantic } = opts;
+  const embeddingModel = semantic ? EMBEDDING_MODEL : null;
+  const action = resolveIndexAction(version, await readMeta(cacheDir), hashSynonyms(synonyms), embeddingModel);
   if (action === "use") return { cacheDir, action };
 
   // Download the range's base version exactly so the result lands under the same index key.
   const { major, minor, patch } = parseVersion(version);
   const downloaded = await downloadPackage(packageName, `${major}.${minor}.${patch}`, { cacheRoot });
-  const built = await buildIndexFromPackage(downloaded.dir, providerId, downloaded.version, cacheRoot, synonyms);
+  const embedder = semantic ? await getEmbedder() : undefined;
+  const built = await buildIndexFromPackage(
+    downloaded.dir,
+    providerId,
+    downloaded.version,
+    cacheRoot,
+    synonyms,
+    embedder,
+  );
   if (built.dir !== cacheDir) {
     throw new Error(`Index for ${packageName}@${version} was written to ${built.dir}, expected ${cacheDir}`);
   }

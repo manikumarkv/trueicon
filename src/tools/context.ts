@@ -76,6 +76,18 @@ export function resolveVersion(projectDir: string, config: ProjectConfig, packag
 /** Which file named the project's providers. */
 export type ProvidersSource = "iconmcp.json" | "package.json";
 
+/**
+ * Whether semantic search is enabled: TRUEICON_SEMANTIC=1/0 overrides the
+ * "semantic" flag in .iconmcp.json (default off). The env override exists so
+ * one-off runs and tests can flip it without editing the project config.
+ */
+export function resolveSemanticSearch(config: ProjectConfig): boolean {
+  const fromEnv = process.env.TRUEICON_SEMANTIC?.trim().toLowerCase();
+  if (fromEnv === "1" || fromEnv === "true") return true;
+  if (fromEnv === "0" || fromEnv === "false") return false;
+  return config.semantic ?? false;
+}
+
 export interface ProjectProviders {
   config: ProjectConfig;
   /** Packages to search, in order. May include unsupported packages listed in .iconmcp.json. */

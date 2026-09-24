@@ -6,7 +6,7 @@ import type { IconRecord } from "../indexer/types.js";
 import { toKebabCase } from "../providers/adapter.js";
 import { getProvider } from "../providers/registry.js";
 import { loadIndex } from "../search/search.js";
-import { jsonToolResult, resolveContext, resolveVersion, usageSnippet, type ToolContext } from "./context.js";
+import { jsonToolResult, resolveContext, resolveSemanticSearch, resolveVersion, usageSnippet, type ToolContext } from "./context.js";
 import type { ProjectLocator } from "./projectLocator.js";
 
 export interface GetIconInput {
@@ -38,8 +38,8 @@ export async function getIconTool(input: GetIconInput, ctx: ToolContext): Promis
   const provider = getProvider(input.provider);
   if (!provider) throw new Error(`Unknown provider "${input.provider}"`);
 
-  const version =
-    input.version ?? resolveVersion(ctx.projectDir, loadProjectConfig(ctx.projectDir), provider.package)?.version;
+  const projectConfig = loadProjectConfig(ctx.projectDir);
+  const version = input.version ?? resolveVersion(ctx.projectDir, projectConfig, provider.package)?.version;
   if (version === undefined) {
     throw new Error(
       `Could not determine the ${provider.package} version: pass "version", pin it in ${CONFIG_FILE}, ` +
@@ -53,6 +53,7 @@ export async function getIconTool(input: GetIconInput, ctx: ToolContext): Promis
     packageName: provider.package,
     version,
     synonyms: ctx.synonyms,
+    semantic: resolveSemanticSearch(projectConfig),
   });
   const { records } = await loadIndex(cacheDir);
   const record = findRecord(records, name);
