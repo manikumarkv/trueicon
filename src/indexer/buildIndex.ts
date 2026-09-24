@@ -4,6 +4,7 @@ import { join } from "node:path";
 import type { RawIcon } from "../providers/adapter.js";
 import { ADAPTERS } from "../providers/adapters/index.js";
 import { getProvider } from "../providers/registry.js";
+import { EMBEDDING_MODEL, semanticText, type SemanticEmbedder } from "../semantic/embeddings.js";
 import type { IconRecord, IndexMeta, Synonyms } from "./types.js";
 
 export const INDEX_FILE = "index.json";
@@ -18,6 +19,11 @@ export interface BuildIndexOptions {
   version: string;
   /** Extra search terms per term; keys are matched against lowercased name parts and tags. */
   synonyms?: Synonyms;
+  /**
+   * When set, every record gets an embedding vector and meta records the model.
+   * Inject a fake in tests to avoid downloading the real model.
+   */
+  embedder?: SemanticEmbedder;
 }
 
 export interface BuiltIndex {
@@ -55,6 +61,7 @@ export async function buildIndex({
   packageDir,
   version,
   synonyms = {},
+  embedder,
 }: BuildIndexOptions): Promise<BuiltIndex> {
   const provider = getProvider(providerId);
   const adapter = ADAPTERS[providerId];
@@ -84,12 +91,22 @@ export async function buildIndex({
   });
   records.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
 
+  let embeddingModel: string | undefined;
+  if (embedder) {
+    const vectors = await embedder.embed(records.map(semanticText));
+    records.forEach((record, i) => {
+      record.vector = vectors[i];
+    });
+    embeddingModel = EMBEDDING_MODEL;
+  }
+
   const meta: IndexMeta = {
     provider: provider.id,
     package: provider.package,
     version,
     indexVersion: INDEX_VERSION,
     synonymsHash: hashSynonyms(synonyms),
+    embeddingModel,
     builtAt: new Date().toISOString(),
   };
   return { records, meta };
@@ -109,8 +126,9 @@ export async function buildIndexFromPackage(
   version: string,
   cacheRoot: string,
   synonyms: Synonyms = {},
+  embedder?: SemanticEmbedder,
 ): Promise<BuiltIndex & { dir: string }> {
-  const built = await buildIndex({ providerId, packageDir, version, synonyms });
+  const built = await buildIndex({ providerId, packageDir, version, synonyms, embedder });
   const dir = join(cacheRoot, `${built.meta.package}@${majorMinor(version)}`);
   await writeIndex(dir, built.records, built.meta);
   return { ...built, dir };

@@ -24,7 +24,7 @@ describe("ensureIndex concurrency", () => {
   it("shares one download between concurrent calls for the same index", async () => {
     const cacheRoot = await mkdtemp(join(tmpdir(), "trueicon-ensure-"));
     tempDirs.push(cacheRoot);
-    const opts = { cacheRoot, providerId: "lucide", packageName: "lucide-react", synonyms: {} };
+    const opts = { cacheRoot, providerId: "lucide", packageName: "lucide-react", synonyms: {}, semantic: false };
 
     const [a, b] = await Promise.all([
       ensureIndex({ ...opts, version: "^0.460.0" }),

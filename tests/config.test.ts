@@ -167,7 +167,7 @@ describe("ensureIndex", () => {
     await writeIndex(join(cacheRoot, indexKey(packageName, "0.460.0")), built.records, built.meta);
     const fetchSpy = vi.spyOn(globalThis, "fetch");
 
-    const result = await ensureIndex({ cacheRoot, providerId: "lucide", packageName, version: "^0.460.2", synonyms });
+    const result = await ensureIndex({ cacheRoot, providerId: "lucide", packageName, version: "^0.460.2", synonyms, semantic: false });
 
     expect(result).toEqual({ cacheDir: join(cacheRoot, `${packageName}@0.460`), action: "use" });
     expect(fetchSpy).not.toHaveBeenCalled();

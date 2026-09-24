@@ -6,7 +6,8 @@ import type { IconRecord } from "../indexer/types.js";
 import { toKebabCase } from "../providers/adapter.js";
 import { getProvider } from "../providers/registry.js";
 import { loadIndex } from "../search/search.js";
-import { jsonToolResult, resolveContext, resolveVersion, usageSnippet, type ToolContext } from "./context.js";
+import { isTransformersInstalled, TRANSFORMERS_MISSING_WARNING } from "../semantic/embeddings.js";
+import { jsonToolResult, resolveContext, resolveSemanticSearch, resolveVersion, usageSnippet, type ToolContext } from "./context.js";
 import type { ProjectLocator } from "./projectLocator.js";
 
 export interface GetIconInput {
@@ -17,7 +18,7 @@ export interface GetIconInput {
   version?: string;
 }
 
-export type GetIconOutput = IconRecord & { usage: string };
+export type GetIconOutput = IconRecord & { usage: string; warnings?: string[] };
 
 function findRecord(records: readonly IconRecord[], name: string): IconRecord | undefined {
   const exact = records.find((r) => r.name === name || r.importName === name);
@@ -38,8 +39,8 @@ export async function getIconTool(input: GetIconInput, ctx: ToolContext): Promis
   const provider = getProvider(input.provider);
   if (!provider) throw new Error(`Unknown provider "${input.provider}"`);
 
-  const version =
-    input.version ?? resolveVersion(ctx.projectDir, loadProjectConfig(ctx.projectDir), provider.package)?.version;
+  const projectConfig = loadProjectConfig(ctx.projectDir);
+  const version = input.version ?? resolveVersion(ctx.projectDir, projectConfig, provider.package)?.version;
   if (version === undefined) {
     throw new Error(
       `Could not determine the ${provider.package} version: pass "version", pin it in ${CONFIG_FILE}, ` +
@@ -47,17 +48,27 @@ export async function getIconTool(input: GetIconInput, ctx: ToolContext): Promis
     );
   }
 
-  const { cacheDir } = await ensureIndex({
+  // With semantic on but @huggingface/transformers missing, ensureIndex falls back to a
+  // keyword-only index and reports why; a name lookup never needs vectors anyway.
+  const semantic = resolveSemanticSearch(projectConfig);
+  const { cacheDir, warning } = await ensureIndex({
     cacheRoot: ctx.cacheRoot,
     providerId: provider.id,
     packageName: provider.package,
     version,
     synonyms: ctx.synonyms,
+    semantic,
   });
   const { records } = await loadIndex(cacheDir);
   const record = findRecord(records, name);
   if (!record) throw new Error(`Icon "${name}" not found in ${provider.id} (${provider.package}@${version})`);
-  return { ...record, usage: usageSnippet(record) };
+  const icon = { ...record, usage: usageSnippet(record) };
+  // Like search_icons, warn on every call while the peer dependency is missing, even when a
+  // cached index with vectors meant no fallback was needed.
+  const warnings = new Set<string>();
+  if (warning !== undefined) warnings.add(warning);
+  if (semantic && !isTransformersInstalled()) warnings.add(TRANSFORMERS_MISSING_WARNING);
+  return warnings.size === 0 ? icon : { ...icon, warnings: [...warnings] };
 }
 
 export function registerGetIconTool(server: McpServer, locateProject: ProjectLocator): void {

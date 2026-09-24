@@ -3,13 +3,15 @@ import { z } from "zod";
 import { ensureIndex } from "../config/ensureIndex.js";
 import { CONFIG_FILE } from "../config/loadConfig.js";
 import { getProvider, type Provider } from "../providers/registry.js";
-import { loadIndex, searchIcons, type SearchResult } from "../search/search.js";
+import { loadIndex, searchIcons, searchIconsHybrid, type SearchResult } from "../search/search.js";
+import { getEmbedder, isTransformersMissing, TRANSFORMERS_MISSING_WARNING } from "../semantic/embeddings.js";
 import {
   errorMessage,
   jsonToolResult,
   noProvidersError,
   resolveContext,
   resolveProjectProviders,
+  resolveSemanticSearch,
   resolveVersion,
   usageSnippet,
   type ToolContext,
@@ -75,6 +77,23 @@ export async function searchIconsTool(input: SearchIconsInput, ctx: ToolContext)
 
   const { config, packages } = resolveProjectProviders(ctx.projectDir);
   const warnings: string[] = [];
+
+  // Opt-in semantic search: embed the query once, then merge the cosine-similarity
+  // ranking with the keyword ranking per provider. A missing optional peer dependency or a
+  // broken model download degrades to keyword search with a warning instead of failing the call.
+  let queryVector: number[] | null = null;
+  if (resolveSemanticSearch(config)) {
+    try {
+      queryVector = (await (await getEmbedder()).embed([query]))[0]!;
+    } catch (error) {
+      warnings.push(
+        isTransformersMissing(error)
+          ? TRANSFORMERS_MISSING_WARNING
+          : `Semantic search unavailable (${errorMessage(error)}); using keyword search`,
+      );
+    }
+  }
+  const semantic = queryVector !== null;
   let candidates: Provider[];
   if (input.provider !== undefined) {
     const provider = getProvider(input.provider);
@@ -107,9 +126,15 @@ export async function searchIconsTool(input: SearchIconsInput, ctx: ToolContext)
         packageName: provider.package,
         version,
         synonyms: ctx.synonyms,
+        semantic,
       });
       const { records } = await loadIndex(cacheDir);
-      hits.push(...searchIcons(records, query, { provider: provider.id, style: input.style, set: input.set }));
+      const searchOptions = { provider: provider.id, style: input.style, set: input.set };
+      hits.push(
+        ...(semantic
+          ? searchIconsHybrid(records, query, queryVector!, searchOptions)
+          : searchIcons(records, query, searchOptions)),
+      );
     } catch (error) {
       // One broken provider should not hide results from the others.
       if (candidates.length === 1) throw error;

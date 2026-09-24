@@ -16,6 +16,11 @@ export interface IconRecord {
   tags: string[];
   /** Deduped search terms: name parts, tags, then synonym expansions. */
   keywords: string[];
+  /**
+   * Normalized embedding of the name + keywords, present only when the index was
+   * built with semantic search enabled. Used for cosine-similarity ranking.
+   */
+  vector?: number[];
   /** Inner SVG markup. */
   svg: string;
 }
@@ -29,6 +34,11 @@ export interface IndexMeta {
   indexVersion: 1;
   /** sha256 (hex) of the canonicalized synonyms object used for keyword expansion. */
   synonymsHash: string;
+  /**
+   * Embedding model id the vectors were built with, or undefined for a
+   * keyword-only index. Toggling semantic search changes this and triggers a rebuild.
+   */
+  embeddingModel?: string;
   /** ISO timestamp. */
   builtAt: string;
 }

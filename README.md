@@ -75,10 +75,32 @@ That's it for most projects. TrueIcon finds the icon packages your `package.json
 | `providers`             | array  | yes      | Icon packages to search. When it lists any, `package.json` is not used to pick packages. |
 | `providers[].package`   | string | yes      | npm package name: `lucide-react`, `react-icons`, `@heroicons/react`, `@phosphor-icons/react`, `@tabler/icons-react`, `iconoir-react`, `@fluentui/react-icons`, `@carbon/icons-react` or `@ant-design/icons`. |
 | `providers[].version`   | string | no       | Exact version or npm range. Overrides the installed version (see [Versions](#versions)). |
+| `semantic`              | bool   | no       | Opt-in semantic search (default `false`). See below. |
 
 - Unsupported packages in `.iconmcp.json` are skipped, and `search_icons` reports them as a warning.
 - Invalid JSON or a malformed entry makes the tools return an error that names the file and the bad field.
 - If neither file names a supported package, `search_icons` returns an error that says which directory it looked in. You can still pass `provider` to a tool call.
+
+### Semantic search (opt-in)
+
+Set `"semantic": true` in `.iconmcp.json` to add meaning-based ranking to `search_icons`. Each query is embedded with a small local model (`all-MiniLM-L6-v2`, ~90MB downloaded once to the transformers.js cache) and matched against per-icon vectors built at index time; those semantic candidates are merged with the keyword results using reciprocal rank fusion, so exact-name matches still win while conceptual queries like "remove background" can surface `eraser`.
+
+```json
+{
+  "providers": [{ "package": "lucide-react" }],
+  "semantic": true
+}
+```
+
+Semantic search runs on [`@huggingface/transformers`](https://www.npmjs.com/package/@huggingface/transformers), which is an **optional peer dependency and is not installed by default**, so installs that never enable the flag stay lean. To enable semantic search, install it once (about 400MB) alongside trueicon:
+
+```sh
+npm install @huggingface/transformers
+```
+
+If the flag is on but the package is missing, `search_icons` and `get_icon` fall back to keyword-only indexes and return a one-line warning with the install command.
+
+Toggling the flag rebuilds the indexes once (vectors are stored in `index.json` alongside each record, and `meta.json` records the embedding model). It stays fully local: no data leaves your machine. `TRUEICON_SEMANTIC=1` (or `0`) overrides the flag for one-off runs.
 
 ### Which directory is the project
 
@@ -97,6 +119,7 @@ TrueIcon reads `package.json`, `.iconmcp.json` and `node_modules` from the proje
 | ---------------------- | ------------------------------------ | ---------------------------------------------------- |
 | `TRUEICON_PROJECT_DIR` | shared folder, else working directory | Project root holding `package.json` and `.iconmcp.json` |
 | `TRUEICON_CACHE`       | `~/.trueicon/cache`                  | Where downloaded packages and indexes are stored     |
+| `TRUEICON_SEMANTIC`    | `.iconmcp.json` flag                 | `1`/`0` to force semantic search on/off for this run |
 
 ## Versions
 
