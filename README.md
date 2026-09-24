@@ -92,6 +92,14 @@ Set `"semantic": true` in `.iconmcp.json` to add meaning-based ranking to `searc
 }
 ```
 
+Semantic search runs on [`@huggingface/transformers`](https://www.npmjs.com/package/@huggingface/transformers), which is an **optional peer dependency and is not installed by default**, so installs that never enable the flag stay lean. To enable semantic search, install it once (about 400MB) alongside trueicon:
+
+```sh
+npm install @huggingface/transformers
+```
+
+If the flag is on but the package is missing, `search_icons` falls back to keyword search and returns a warning with this command.
+
 Toggling the flag rebuilds the indexes once (vectors are stored in `index.json` alongside each record, and `meta.json` records the embedding model). It stays fully local: no data leaves your machine. `TRUEICON_SEMANTIC=1` (or `0`) overrides the flag for one-off runs.
 
 ### Which directory is the project

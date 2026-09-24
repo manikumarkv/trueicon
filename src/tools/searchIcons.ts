@@ -53,6 +53,24 @@ function clampLimit(limit: number | undefined): number {
   return Math.min(MAX_LIMIT, Math.max(1, Math.floor(limit)));
 }
 
+/**
+ * True when the dynamic import of @huggingface/transformers failed because the optional
+ * peer dependency is not installed (as opposed to, say, a failed model download).
+ */
+export function isTransformersMissing(error: unknown): boolean {
+  const code = (error as { code?: unknown } | null)?.code;
+  const message = errorMessage(error);
+  return (
+    (code === "ERR_MODULE_NOT_FOUND" || message.includes("Cannot find package")) &&
+    message.includes("@huggingface/transformers")
+  );
+}
+
+export const TRANSFORMERS_MISSING_WARNING =
+  "Semantic search is enabled but @huggingface/transformers is not installed. It is an optional peer " +
+  "dependency (about a 400MB one-time install, plus a ~90MB model download on first use). " +
+  "Run `npm install @huggingface/transformers` and re-run; using keyword search for now";
+
 function toHit({ record, score }: SearchResult): SearchIconsHit {
   return {
     name: record.name,
@@ -79,14 +97,18 @@ export async function searchIconsTool(input: SearchIconsInput, ctx: ToolContext)
   const warnings: string[] = [];
 
   // Opt-in semantic search: embed the query once, then merge the cosine-similarity
-  // ranking with the keyword ranking per provider. A broken model download degrades
-  // to keyword search with a warning instead of failing the tool call.
+  // ranking with the keyword ranking per provider. A missing optional peer dependency or a
+  // broken model download degrades to keyword search with a warning instead of failing the call.
   let queryVector: number[] | null = null;
   if (resolveSemanticSearch(config)) {
     try {
       queryVector = (await (await getEmbedder()).embed([query]))[0]!;
     } catch (error) {
-      warnings.push(`Semantic search unavailable (${errorMessage(error)}); using keyword search`);
+      warnings.push(
+        isTransformersMissing(error)
+          ? TRANSFORMERS_MISSING_WARNING
+          : `Semantic search unavailable (${errorMessage(error)}); using keyword search`,
+      );
     }
   }
   const semantic = queryVector !== null;
