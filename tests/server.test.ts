@@ -22,7 +22,7 @@ describe("trueicon MCP server (stdio)", () => {
   });
 
   it("reports its name and version", () => {
-    expect(client.getServerVersion()).toMatchObject({ name: "trueicon", version: "0.1.0" });
+    expect(client.getServerVersion()).toMatchObject({ name: "trueicon", version: "0.2.0" });
   });
 
   it("lists the ping tool", async () => {

@@ -5,7 +5,7 @@
 [![Install in VS Code Insiders](https://img.shields.io/badge/VS_Code_Insiders-Install_Server-24bfa5?style=flat-square&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=trueicon&config=%7B%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22trueicon%22%5D%2C%22env%22%3A%7B%22TRUEICON_PROJECT_DIR%22%3A%22%24%7BworkspaceFolder%7D%22%7D%7D&quality=insiders)
 [![Install in Cursor](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en/install-mcp?name=trueicon&config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyIteSIsInRydWVpY29uIl0sImVudiI6eyJUUlVFSUNPTl9QUk9KRUNUX0RJUiI6IiR7d29ya3NwYWNlRm9sZGVyfSJ9fQ%3D%3D)
 
-TrueIcon is an [MCP](https://modelcontextprotocol.io) server that gives AI coding assistants exact, version-correct icon references. Your assistant searches the icon packages your project actually uses (`lucide-react`, `react-icons`, `@heroicons/react`, `@phosphor-icons/react`, `@tabler/icons-react`, `iconoir-react`) and gets back real icon names, import paths and a ready-to-paste `import` line.
+TrueIcon is an [MCP](https://modelcontextprotocol.io) server that gives AI coding assistants exact, version-correct icon references. Your assistant searches the icon packages your project actually uses (`lucide-react`, `react-icons`, `@heroicons/react`, `@phosphor-icons/react`, `@tabler/icons-react`, `iconoir-react`, `@fluentui/react-icons`, `@carbon/icons-react`, `@ant-design/icons`) and gets back real icon names, import paths and a ready-to-paste `import` line.
 
 ## Why
 
@@ -25,6 +25,9 @@ AI assistants often guess icon names. The guess can be an icon that never existe
 | `phosphor`    | `@phosphor-icons/react` | `<icon>` for the regular weight, `<icon>-<weight>` otherwise, e.g. `trash-bold` → `TrashIcon` with `weight="bold"` |
 | `tabler`      | `@tabler/icons-react`   | Tabler's icon names, e.g. `trash` → `IconTrash`, `trash-filled` → `IconTrashFilled`                       |
 | `iconoir`     | `iconoir-react`         | `<icon>` for regular, `<icon>-solid` for solid, e.g. `trash-solid` → `TrashSolid`                          |
+| `fluentui`    | `@fluentui/react-icons` | `<icon>-<style>` with style `regular`, `filled` or `color`, e.g. `delete-regular` → `DeleteRegular`. Only the scalable (1em) icons are indexed, not the size-specific variants |
+| `carbon`      | `@carbon/icons-react`   | Carbon's export names in kebab case, e.g. `trash-can` → `TrashCan`. Variants add `-filled`, `-alt` or `-color`, e.g. `accessibility-filled` → `AccessibilityFilled` |
+| `antdesign`   | `@ant-design/icons`     | `<icon>-<theme>` with theme `outlined`, `filled` or `two-tone`, e.g. `delete-outlined` → `DeleteOutlined` |
 
 Tools accept either the provider id or the npm package name (`"lucide"` or `"lucide-react"`). Usage snippets are for React. Phosphor weights all share one component, so pass the record's `style` as the `weight` prop (e.g. `<TrashIcon weight="bold" />`); the usage snippet only shows the import.
 
@@ -41,7 +44,7 @@ npm i -g trueicon
 trueicon
 ```
 
-`trueicon` is a stdio MCP server. Your MCP client starts it; running it by hand only prints `trueicon: v0.1.0 running on stdio` to stderr and waits for JSON-RPC on stdin.
+`trueicon` is a stdio MCP server. Your MCP client starts it; running it by hand only prints `trueicon: v0.2.0 running on stdio` to stderr and waits for JSON-RPC on stdin.
 
 ## Quick start
 
@@ -76,7 +79,7 @@ TrueIcon looks for `.iconmcp.json` in the project directory. That is `$TRUEICON_
 | Field                   | Type   | Required | Meaning                                                                                  |
 | ----------------------- | ------ | -------- | ---------------------------------------------------------------------------------------- |
 | `providers`             | array  | yes      | Icon packages the project uses. `search_icons` searches all of them by default.          |
-| `providers[].package`   | string | yes      | npm package name: `lucide-react`, `react-icons`, `@heroicons/react`, `@phosphor-icons/react`, `@tabler/icons-react` or `iconoir-react`. |
+| `providers[].package`   | string | yes      | npm package name: `lucide-react`, `react-icons`, `@heroicons/react`, `@phosphor-icons/react`, `@tabler/icons-react`, `iconoir-react`, `@fluentui/react-icons`, `@carbon/icons-react` or `@ant-design/icons`. |
 | `providers[].version`   | string | no       | Exact version or npm range. If omitted, it is read from `package.json` (see below).      |
 
 - If the file is missing, no providers are configured. `search_icons` then only works when you pass `provider` explicitly, and `get_icon` still works.
@@ -191,7 +194,7 @@ Searches the index and returns ranked matches with import statements.
 | `query`    | string  | yes      | What the icon should depict, e.g. `"trash"`                                          |
 | `provider` | string  | no       | Provider id or package. Default: every provider in `.iconmcp.json`                   |
 | `version`  | string  | no       | Version or range. Default: resolved as described in [Versions](#versions)            |
-| `style`    | string  | no       | Exact style filter, e.g. `"outline"`, `"solid"`, `"filled"` (tabler) or a phosphor weight such as `"bold"`. Lucide icons are all `outline` |
+| `style`    | string  | no       | Exact style filter, e.g. `"outline"`, `"solid"`, `"filled"` (tabler), `"regular"` (fluentui), `"two-tone"` (antdesign) or a phosphor weight such as `"bold"`. Lucide icons are all `outline`; base carbon icons have no style |
 | `set`      | string  | no       | Exact set filter, e.g. `"fa6"` or `"md"` for react-icons                             |
 | `limit`    | integer | no       | Maximum results, 1 to 50, default 10                                                 |
 
@@ -224,7 +227,7 @@ How search works:
 - `provider`, `style` and `set` are exact, case-insensitive filters. They are applied before ranking.
 - Ranking uses [Fuse.js](https://www.fusejs.io/) fuzzy matching over the icon name, import name, keywords and tags. Small typos are tolerated: `"detele"` finds `Delete`.
 - `score` runs from `0` (perfect) to `1`, so lower is better. Results from several providers are merged and sorted by score.
-- Short keyword queries (`"trash"`, `"settings"`, `"beer"`) work best. The query is matched as one string, so a multi-word phrase such as `"trash can"` may return fewer results than its main keyword alone.
+- Multi-word queries are tokenized: each word is matched on its own, only icons that match every word are kept, and they are ranked by their average score. So `"trash can"` finds `trash-can` icons. Short keyword queries (`"trash"`, `"settings"`, `"beer"`) still cast the widest net.
 - If one provider fails, for example because its version can't be resolved or the download fails, its results are skipped and a `warnings` array explains why. The other providers still return results.
 
 ### `list_providers`
@@ -243,7 +246,10 @@ Takes no arguments. Returns the providers configured in `.iconmcp.json` with the
     { "id": "heroicons", "package": "@heroicons/react", "description": "Heroicons by the Tailwind CSS team as React components" },
     { "id": "phosphor", "package": "@phosphor-icons/react", "description": "Phosphor icons in six weights (thin, light, regular, bold, fill, duotone) as React components" },
     { "id": "tabler", "package": "@tabler/icons-react", "description": "Tabler icons (outline and filled) as React components" },
-    { "id": "iconoir", "package": "iconoir-react", "description": "Iconoir icons (regular and solid) as React components" }
+    { "id": "iconoir", "package": "iconoir-react", "description": "Iconoir icons (regular and solid) as React components" },
+    { "id": "fluentui", "package": "@fluentui/react-icons", "description": "Microsoft Fluent UI System icons (regular, filled and color) as React components" },
+    { "id": "carbon", "package": "@carbon/icons-react", "description": "IBM Carbon Design System icons as React components" },
+    { "id": "antdesign", "package": "@ant-design/icons", "description": "Ant Design icons (outlined, filled and two-tone) as React components" }
   ]
 }
 ```
