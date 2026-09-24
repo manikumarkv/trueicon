@@ -339,6 +339,15 @@ npm run typecheck  # tsc --noEmit
 
 CI runs lint, typecheck and tests on Node 20 and 22 for every push and pull request.
 
+### Tests
+
+| Command | What it checks | Network |
+| --- | --- | --- |
+| `npm test` | Adapter parsing and every tool (`search_icons`, `get_icon`, `list_providers`) for all 9 providers, using the small fixtures in `tests/fixtures/` | No |
+| `npm run smoke` | Every provider against the real npm packages: several pinned releases plus the current latest, checking the icon count and a few well-known icons | Yes |
+
+The fixtures only change when someone edits them, so they can't catch a provider that changes its package format upstream. `npm run smoke` does. Run `npm run smoke -- lucide tabler` to check only some providers. CI runs it on pull requests that change `src/providers/`, `src/indexer/` or `src/cache/`, and every Monday against the latest releases.
+
 ### Testing and debugging locally
 
 These scripts build the server and run it against `playground/`, a sample project that lists all 9 providers at their latest versions. They use a separate cache in `.cache/dev/`, so your real `~/.trueicon` cache is untouched.
@@ -391,6 +400,8 @@ npm run dev:debug
    - Put a comment at the top of the adapter describing the package's file layout, as the existing adapters do.
 3. **Wire it up** in `src/providers/adapters/index.ts` by adding it to `ADAPTERS` under the provider id.
 4. **Test it.** Add a small pinned fixture under `tests/fixtures/<provider>/` that mirrors the package layout, with a few real icon files plus any files the adapter must skip. Then add `tests/adapters/<provider>.test.ts`, covering name mapping, import paths, SVG output and `buildIndex` record ids like the existing adapter tests. `tests/adapters/common.test.ts` fails if a registered provider has no adapter.
+5. **Add it to the tool tests** by adding a case to `CASES` in `tests/providers-tools.test.ts`: the fixture, a search query, one icon with its exact import line, and a deprecated alias if the package has them. The test fails if a registered provider has no case.
+6. **Add smoke targets** to `TARGETS` in `scripts/smoke.mjs`: a few well-known import names and a minimum icon count well below the real one. Then run `npm run smoke -- <provider>` to check it against the real published package.
 
 ## License
 

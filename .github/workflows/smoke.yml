@@ -1,0 +1,28 @@
+name: Smoke
+
+# Checks every provider against the real npm packages (see scripts/smoke.mjs). Runs on pull
+# requests that touch parsing or indexing, and weekly so a new upstream release that changes its
+# module format is caught before users hit it.
+on:
+  pull_request:
+    paths:
+      - "src/providers/**"
+      - "src/indexer/**"
+      - "src/cache/**"
+      - "scripts/smoke.mjs"
+      - ".github/workflows/smoke.yml"
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: npm
+      - run: npm ci
+      - run: npm run smoke

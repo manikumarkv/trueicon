@@ -46,7 +46,8 @@
     "prepublishOnly": "npm run build",
     "dev:call": "npm run build --silent && node scripts/dev.mjs call",
     "dev:inspect": "npm run build --silent && node scripts/dev.mjs inspect",
-    "dev:debug": "npm run build --silent && node scripts/dev.mjs inspect --debug"
+    "dev:debug": "npm run build --silent && node scripts/dev.mjs inspect --debug",
+    "smoke": "npm run build --silent && node scripts/smoke.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.1",
