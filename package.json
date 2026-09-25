@@ -26,7 +26,12 @@
     "iconoir",
     "fluentui",
     "carbon",
-    "ant-design"
+    "ant-design",
+    "mui",
+    "material-icons",
+    "radix",
+    "remixicon",
+    "fontawesome"
   ],
   "type": "module",
   "bin": {

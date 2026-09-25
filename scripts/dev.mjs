@@ -6,7 +6,7 @@
 //   npm run dev:inspect                          open the MCP Inspector web UI
 //   npm run dev:debug                            same, with the Node debugger on port 9229
 //
-// Defaults: TRUEICON_PROJECT_DIR=playground/ (all 9 providers) and TRUEICON_CACHE=.cache/dev/,
+// Defaults: TRUEICON_PROJECT_DIR=playground/ (all 15 providers) and TRUEICON_CACHE=.cache/dev/,
 // so your real ~/.trueicon cache is untouched. Set either variable to override. Pass --fresh
 // to delete the dev cache first and force every index to rebuild.
 

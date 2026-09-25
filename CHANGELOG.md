@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Six new icon providers, bringing the total to fifteen:
+  - `@mui/icons-material` (`mui`), about 10,750 icons in filled, outlined, rounded, sharp and two-tone themes.
+  - `@radix-ui/react-icons` (`radix`), about 318 icons.
+  - `@remixicon/react` (`remix`), about 3,227 icons in line and fill styles.
+  - The Font Awesome Free packages `@fortawesome/free-solid-svg-icons` (`fontawesome-solid`), `@fortawesome/free-regular-svg-icons` (`fontawesome-regular`) and `@fortawesome/free-brands-svg-icons` (`fontawesome-brands`), about 2,160 icons. Old names of renamed icons, such as `trash-alt`, are searchable as tags.
 - Opt-in semantic search for `search_icons`: set `"semantic": true` in `.iconmcp.json` (or `TRUEICON_SEMANTIC=1`) to merge cosine-similarity ranking over per-icon embedding vectors with the keyword ranking, using reciprocal rank fusion. Vectors come from a small local model (`Xenova/all-MiniLM-L6-v2`, ~90MB downloaded once), built into `index.json` at index time; `meta.json` records the embedding model so toggling the flag rebuilds indexes automatically. Fully offline after the first download. `@huggingface/transformers` is an optional peer dependency and is not installed by default (about 400MB); run `npm install @huggingface/transformers` to enable semantic search. Without it, `search_icons` falls back to keyword search with a warning that gives the install command.
 - Greatly expanded the bundled `synonyms.json` (78 → 345 concepts) covering files, editing, media, devices, weather, finance, layout/UI, social, nature and more, with 20 new search-eval cases proving they resolve.
 

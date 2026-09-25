@@ -5,7 +5,7 @@
 [![Install in VS Code Insiders](https://img.shields.io/badge/VS_Code_Insiders-Install_Server-24bfa5?style=flat-square&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=trueicon&config=%7B%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22trueicon%22%5D%2C%22env%22%3A%7B%22TRUEICON_PROJECT_DIR%22%3A%22%24%7BworkspaceFolder%7D%22%7D%7D&quality=insiders)
 [![Install in Cursor](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en/install-mcp?name=trueicon&config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyIteSIsInRydWVpY29uIl0sImVudiI6eyJUUlVFSUNPTl9QUk9KRUNUX0RJUiI6IiR7d29ya3NwYWNlRm9sZGVyfSJ9fQ%3D%3D)
 
-TrueIcon is an [MCP](https://modelcontextprotocol.io) server that gives AI coding assistants exact, version-correct icon references. Your assistant searches the icon packages your project actually uses (`lucide-react`, `react-icons`, `@heroicons/react`, `@phosphor-icons/react`, `@tabler/icons-react`, `iconoir-react`, `@fluentui/react-icons`, `@carbon/icons-react`, `@ant-design/icons`) and gets back real icon names, import paths and a ready-to-paste `import` line.
+TrueIcon is an [MCP](https://modelcontextprotocol.io) server that gives AI coding assistants exact, version-correct icon references. Your assistant searches the icon packages your project actually uses (`lucide-react`, `react-icons`, `@heroicons/react`, `@phosphor-icons/react`, `@tabler/icons-react`, `iconoir-react`, `@fluentui/react-icons`, `@carbon/icons-react`, `@ant-design/icons`, `@mui/icons-material`, `@radix-ui/react-icons`, `@remixicon/react` and the Font Awesome Free packages) and gets back real icon names, import paths and a ready-to-paste `import` line.
 
 ## Why
 
@@ -28,8 +28,14 @@ AI assistants often guess icon names. The guess can be an icon that never existe
 | `fluentui`    | `@fluentui/react-icons` | `<icon>-<style>` with style `regular`, `filled` or `color`, e.g. `delete-regular` → `DeleteRegular`. Only the scalable (1em) icons are indexed, not the size-specific variants |
 | `carbon`      | `@carbon/icons-react`   | Carbon's export names in kebab case, e.g. `trash-can` → `TrashCan`. Variants add `-filled`, `-alt` or `-color`, e.g. `accessibility-filled` → `AccessibilityFilled` |
 | `antdesign`   | `@ant-design/icons`     | `<icon>-<theme>` with theme `outlined`, `filled` or `two-tone`, e.g. `delete-outlined` → `DeleteOutlined` |
+| `mui`         | `@mui/icons-material`   | MUI's export names in kebab case, e.g. `delete` → `Delete`. Themes add `-outlined`, `-rounded`, `-sharp` or `-two-tone`, e.g. `delete-outlined` → `DeleteOutlined`; base icons have the style `filled` |
+| `radix`       | `@radix-ui/react-icons` | Radix's icon names, e.g. `trash` → `TrashIcon`, `github-logo` → `GitHubLogoIcon`                          |
+| `remix`       | `@remixicon/react`      | Remix's icon names with the `-line` or `-fill` style, e.g. `delete-bin-line` → `RiDeleteBinLine`          |
+| `fontawesome-solid`   | `@fortawesome/free-solid-svg-icons`   | Font Awesome's icon names, e.g. `trash-can` → `faTrashCan`. Renamed icons' old names (`trash-alt`) are searchable as tags |
+| `fontawesome-regular` | `@fortawesome/free-regular-svg-icons` | Same as `fontawesome-solid`, e.g. `star` → `faStar`                                             |
+| `fontawesome-brands`  | `@fortawesome/free-brands-svg-icons`  | Same as `fontawesome-solid`, e.g. `github` → `faGithub`                                         |
 
-Tools accept either the provider id or the npm package name (`"lucide"` or `"lucide-react"`). Usage snippets are for React. Phosphor weights all share one component, so pass the record's `style` as the `weight` prop (e.g. `<TrashIcon weight="bold" />`); the usage snippet only shows the import.
+Tools accept either the provider id or the npm package name (`"lucide"` or `"lucide-react"`). Usage snippets are for React. Phosphor weights all share one component, so pass the record's `style` as the `weight` prop (e.g. `<TrashIcon weight="bold" />`); the usage snippet only shows the import. Font Awesome imports are icon definitions, not components: render them with `@fortawesome/react-fontawesome`, e.g. `<FontAwesomeIcon icon={faTrashCan} />`.
 
 ## Install
 
@@ -73,7 +79,7 @@ That's it for most projects. TrueIcon finds the icon packages your `package.json
 | Field                   | Type   | Required | Meaning                                                                                  |
 | ----------------------- | ------ | -------- | ---------------------------------------------------------------------------------------- |
 | `providers`             | array  | yes      | Icon packages to search. When it lists any, `package.json` is not used to pick packages. |
-| `providers[].package`   | string | yes      | npm package name: `lucide-react`, `react-icons`, `@heroicons/react`, `@phosphor-icons/react`, `@tabler/icons-react`, `iconoir-react`, `@fluentui/react-icons`, `@carbon/icons-react` or `@ant-design/icons`. |
+| `providers[].package`   | string | yes      | npm package name: `lucide-react`, `react-icons`, `@heroicons/react`, `@phosphor-icons/react`, `@tabler/icons-react`, `iconoir-react`, `@fluentui/react-icons`, `@carbon/icons-react`, `@ant-design/icons`, `@mui/icons-material`, `@radix-ui/react-icons`, `@remixicon/react`, `@fortawesome/free-solid-svg-icons`, `@fortawesome/free-regular-svg-icons` or `@fortawesome/free-brands-svg-icons`. |
 | `providers[].version`   | string | no       | Exact version or npm range. Overrides the installed version (see [Versions](#versions)). |
 | `semantic`              | bool   | no       | Opt-in semantic search (default `false`). See below. |
 
@@ -223,7 +229,7 @@ Searches the index and returns ranked matches with import statements.
 | `query`    | string  | yes      | What the icon should depict, e.g. `"trash"`                                          |
 | `provider` | string  | no       | Provider id or package. Default: every provider the project uses ([see Configuration](#which-icon-packages-are-searched)) |
 | `version`  | string  | no       | Version or range. Default: resolved as described in [Versions](#versions)            |
-| `style`    | string  | no       | Exact style filter, e.g. `"outline"`, `"solid"`, `"filled"` (tabler), `"regular"` (fluentui), `"two-tone"` (antdesign) or a phosphor weight such as `"bold"`. Lucide icons are all `outline`; base carbon icons have no style |
+| `style`    | string  | no       | Exact style filter, e.g. `"outline"`, `"solid"`, `"filled"` (tabler), `"regular"` (fluentui), `"two-tone"` (antdesign, mui), `"line"` (remix), `"brands"` (Font Awesome) or a phosphor weight such as `"bold"`. Lucide icons are all `outline`; base carbon icons and radix icons have no style |
 | `set`      | string  | no       | Exact set filter, e.g. `"fa6"` or `"md"` for react-icons                             |
 | `limit`    | integer | no       | Maximum results, 1 to 50, default 10                                                 |
 
@@ -280,7 +286,13 @@ Takes no arguments. Returns the project directory TrueIcon reads and how it was 
     { "id": "iconoir", "package": "iconoir-react", "description": "Iconoir icons (regular and solid) as React components" },
     { "id": "fluentui", "package": "@fluentui/react-icons", "description": "Microsoft Fluent UI System icons (regular, filled and color) as React components" },
     { "id": "carbon", "package": "@carbon/icons-react", "description": "IBM Carbon Design System icons as React components" },
-    { "id": "antdesign", "package": "@ant-design/icons", "description": "Ant Design icons (outlined, filled and two-tone) as React components" }
+    { "id": "antdesign", "package": "@ant-design/icons", "description": "Ant Design icons (outlined, filled and two-tone) as React components" },
+    { "id": "mui", "package": "@mui/icons-material", "description": "Material UI icons (filled, outlined, rounded, sharp and two-tone) as React components" },
+    { "id": "radix", "package": "@radix-ui/react-icons", "description": "Radix UI icons (15x15) as React components" },
+    { "id": "remix", "package": "@remixicon/react", "description": "Remix Icon (line and fill) as React components" },
+    { "id": "fontawesome-solid", "package": "@fortawesome/free-solid-svg-icons", "description": "Font Awesome Free solid icons, rendered with @fortawesome/react-fontawesome" },
+    { "id": "fontawesome-regular", "package": "@fortawesome/free-regular-svg-icons", "description": "Font Awesome Free regular icons, rendered with @fortawesome/react-fontawesome" },
+    { "id": "fontawesome-brands", "package": "@fortawesome/free-brands-svg-icons", "description": "Font Awesome Free brand logos, rendered with @fortawesome/react-fontawesome" }
   ]
 }
 ```
@@ -376,14 +388,14 @@ CI runs lint, typecheck and tests on Node 20 and 22 for every push and pull requ
 
 | Command | What it checks | Network |
 | --- | --- | --- |
-| `npm test` | Adapter parsing and every tool (`search_icons`, `get_icon`, `list_providers`) for all 9 providers, using the small fixtures in `tests/fixtures/` | No |
+| `npm test` | Adapter parsing and every tool (`search_icons`, `get_icon`, `list_providers`) for all 15 providers, using the small fixtures in `tests/fixtures/` | No |
 | `npm run smoke` | Every provider against the real npm packages: several pinned releases plus the current latest, checking the icon count and a few well-known icons | Yes |
 
 The fixtures only change when someone edits them, so they can't catch a provider that changes its package format upstream. `npm run smoke` does. Run `npm run smoke -- lucide tabler` to check only some providers. CI runs it on pull requests that change `src/providers/`, `src/indexer/` or `src/cache/`, and every Monday against the latest releases.
 
 ### Testing and debugging locally
 
-These scripts build the server and run it against `playground/`, a sample project that lists all 9 providers at their latest versions. They use a separate cache in `.cache/dev/`, so your real `~/.trueicon` cache is untouched.
+These scripts build the server and run it against `playground/`, a sample project that lists all 15 providers at their latest versions. They use a separate cache in `.cache/dev/`, so your real `~/.trueicon` cache is untouched.
 
 ```sh
 # Call one tool and print the result

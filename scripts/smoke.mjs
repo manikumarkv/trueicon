@@ -34,6 +34,12 @@ const TARGETS = {
   fluentui: { versions: ["2.0.341"], icons: ["DeleteRegular", "SearchRegular", "PersonRegular"], minIcons: 3000 },
   carbon: { versions: ["11.89.0"], icons: ["TrashCan", "Search", "User"], minIcons: 1500 },
   antdesign: { versions: ["6.3.4"], icons: ["DeleteOutlined", "SearchOutlined", "UserOutlined"], minIcons: 400 },
+  mui: { versions: ["5.0.0", "5.18.0", "6.5.0", "7.3.11"], icons: ["Delete", "SearchOutlined", "PersonRounded"], minIcons: 8000 },
+  radix: { versions: ["1.0.0", "1.3.0"], icons: ["TrashIcon", "MagnifyingGlassIcon", "PersonIcon"], minIcons: 250 },
+  remix: { versions: ["4.0.0", "4.6.0"], icons: ["RiDeleteBinLine", "RiSearchLine", "RiUserFill"], minIcons: 2500 },
+  "fontawesome-solid": { versions: ["5.15.4", "6.7.2"], icons: ["faTrash", "faUser", "faHouseUser"], minIcons: 800 },
+  "fontawesome-regular": { versions: ["5.15.4", "6.7.2"], icons: ["faUser", "faStar", "faHeart"], minIcons: 120 },
+  "fontawesome-brands": { versions: ["5.15.4", "6.7.2"], icons: ["faGithub", "faReact", "faApple"], minIcons: 400 },
 };
 
 async function latestVersion(pkg) {
