@@ -50,7 +50,7 @@ describe("trueicon MCP server tools (in-memory)", () => {
     });
     const { body } = await call("list_providers", {});
     expect(body.configured).toHaveLength(2);
-    expect(body.registry).toHaveLength(9);
+    expect(body.registry).toHaveLength(15);
   });
 
   it("returns tool errors as isError JSON", async () => {

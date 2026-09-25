@@ -53,6 +53,36 @@ export const PROVIDERS: readonly Provider[] = [
     package: "@ant-design/icons",
     description: "Ant Design icons (outlined, filled and two-tone) as React components",
   },
+  {
+    id: "mui",
+    package: "@mui/icons-material",
+    description: "Material UI icons (filled, outlined, rounded, sharp and two-tone) as React components",
+  },
+  {
+    id: "radix",
+    package: "@radix-ui/react-icons",
+    description: "Radix UI icons (15x15) as React components",
+  },
+  {
+    id: "remix",
+    package: "@remixicon/react",
+    description: "Remix Icon (line and fill) as React components",
+  },
+  {
+    id: "fontawesome-solid",
+    package: "@fortawesome/free-solid-svg-icons",
+    description: "Font Awesome Free solid icons, rendered with @fortawesome/react-fontawesome",
+  },
+  {
+    id: "fontawesome-regular",
+    package: "@fortawesome/free-regular-svg-icons",
+    description: "Font Awesome Free regular icons, rendered with @fortawesome/react-fontawesome",
+  },
+  {
+    id: "fontawesome-brands",
+    package: "@fortawesome/free-brands-svg-icons",
+    description: "Font Awesome Free brand logos, rendered with @fortawesome/react-fontawesome",
+  },
 ];
 
 // Finds a provider by its id or by its npm package name.

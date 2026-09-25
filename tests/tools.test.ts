@@ -136,7 +136,7 @@ describe("listProvidersTool", () => {
       { id: "lucide", package: "lucide-react", version: "0.460.0", source: "iconmcp.json" },
       { id: "heroicons", package: "@heroicons/react", version: "2.1.5", source: "iconmcp.json" },
     ]);
-    expect(registry).toHaveLength(9);
+    expect(registry).toHaveLength(15);
     expect(registry.map((p) => p.id).sort()).toEqual(PROVIDERS.map((p) => p.id).sort());
     expect(registry.every((p) => p.package && p.description)).toBe(true);
   });

@@ -122,6 +122,68 @@ const CASES: ProviderCase[] = [
       usage: "import { DeleteOutlined } from '@ant-design/icons';",
     },
   },
+  {
+    id: "mui",
+    package: "@mui/icons-material",
+    fixture: "mui",
+    version: "9.4.0",
+    query: "delete",
+    icon: { name: "delete", importName: "Delete", usage: "import { Delete } from '@mui/icons-material';" },
+  },
+  {
+    id: "radix",
+    package: "@radix-ui/react-icons",
+    fixture: "radix",
+    version: "1.3.2",
+    query: "trash",
+    icon: { name: "trash", importName: "TrashIcon", usage: "import { TrashIcon } from '@radix-ui/react-icons';" },
+  },
+  {
+    id: "remix",
+    package: "@remixicon/react",
+    fixture: "remix",
+    version: "4.9.0",
+    query: "delete",
+    icon: {
+      name: "delete-bin-line",
+      importName: "RiDeleteBinLine",
+      usage: "import { RiDeleteBinLine } from '@remixicon/react';",
+    },
+  },
+  // The three Font Awesome packages share one module layout, so they share one fixture.
+  {
+    id: "fontawesome-solid",
+    package: "@fortawesome/free-solid-svg-icons",
+    fixture: "fontawesome",
+    version: "7.3.1",
+    query: "trash",
+    icon: {
+      name: "trash-can",
+      importName: "faTrashCan",
+      usage: "import { faTrashCan } from '@fortawesome/free-solid-svg-icons';",
+    },
+    alias: { name: "trash-alt", importName: "faTrashCan" },
+  },
+  {
+    id: "fontawesome-regular",
+    package: "@fortawesome/free-regular-svg-icons",
+    fixture: "fontawesome",
+    version: "7.3.1",
+    query: "trash",
+    icon: {
+      name: "trash-can",
+      importName: "faTrashCan",
+      usage: "import { faTrashCan } from '@fortawesome/free-regular-svg-icons';",
+    },
+  },
+  {
+    id: "fontawesome-brands",
+    package: "@fortawesome/free-brands-svg-icons",
+    fixture: "fontawesome",
+    version: "7.3.1",
+    query: "trash",
+    icon: { name: "trash", importName: "faTrash", usage: "import { faTrash } from '@fortawesome/free-brands-svg-icons';" },
+  },
 ];
 
 let cacheRoot: string;
