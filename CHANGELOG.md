@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `search_icons` ranks icons whose name answers the query first: an exact name, then names starting with the query, then the query as a phrase, then names containing every query word or reaching it through a synonym. Within each level shorter names win and each icon's style variants stay together, default style first. So `trash` on MUI returns `Delete` instead of `RestoreFromTrash`, `delete` on Remix returns `RiDeleteBinLine` before `RiChatDeleteLine`, and `arrow right` returns `arrow-right` before `circle-arrow-right`. Scores encode this order, so it holds when several providers are merged.
+
 ## [0.4.0] - 2026-09-25
 
 ### Added
