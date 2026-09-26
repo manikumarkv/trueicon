@@ -416,6 +416,7 @@ npm run dev:debug
 - **Rebuild indexes:** add `--fresh` to delete the dev cache first, e.g. `npm run dev:call -- --fresh search_icons query=trash`. Use it after changing an adapter.
 - **Breakpoints:** run `npm run dev:debug`, then in VS Code use **Debug: Attach to Node Process**, or open `chrome://inspect` in Chrome. Source maps are on, so breakpoints work in the `.ts` files under `src/`. Set them, then call a tool from the Inspector.
 - **Logging:** stdout carries the MCP protocol, so log with `console.error`. It shows in the terminal for `dev:call` and in the Inspector's server log for `dev:inspect`.
+- **Manual test prompts:** [`playground/TEST-PROMPTS.md`](playground/TEST-PROMPTS.md) is a checklist of prompts to run in an MCP client against the playground, with the expected tool calls and results. It covers every tool, all 15 providers, ranking, configuration errors and semantic search. Run it before a release.
 
 ### Extending `synonyms.json`
 
