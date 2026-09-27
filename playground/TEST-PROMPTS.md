@@ -15,8 +15,6 @@ claude mcp add trueicon-dev -e TRUEICON_PROJECT_DIR="$(pwd)/playground" -- node 
 
 Start a new Claude Code session so it picks up the server. The first search for each package downloads and indexes it, which takes a few seconds. To look at raw tool output without an assistant, use `npm run dev:call -- <tool> key=value ...` instead; it uses the same playground.
 
-Tests marked **Known gap** describe current behavior that is not what we want yet. They should keep failing the same way until the gap is fixed.
-
 ## 1. Setup and project detection
 
 **1.1 Providers**
@@ -183,12 +181,12 @@ Tests marked **Known gap** describe current behavior that is not what we want ye
 
 - Pass: the tool returns `Icon "no-such-icon" not found in lucide (lucide-react@…)`, and the assistant searches instead of guessing.
 
-**5.5 Known gap: old Font Awesome export names**
+**5.5 Old import names**
 
 > Get faSearch from @fortawesome/free-solid-svg-icons.
 
-- Today: `Icon "faSearch" not found`. `faSearch` still works as an export in Font Awesome 6+, but TrueIcon only indexes it as the `search` tag of `faMagnifyingGlass`.
-- Pass once fixed: returns `magnifying-glass` → `faMagnifyingGlass`.
+- Calls `get_icon` with `name: "faSearch"`.
+- Pass: returns `magnifying-glass` → `import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';`, and the assistant suggests the current name. `faTimes`, `faHome` and `faCog` resolve the same way, to `faXmark`, `faHouse` and `faGear`.
 
 ## 6. Every provider
 

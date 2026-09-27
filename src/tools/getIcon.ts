@@ -29,7 +29,39 @@ function findRecord(records: readonly IconRecord[], name: string): IconRecord | 
   // Deprecated or renamed icons are kept as alias tags on the current icon, e.g. lucide 1.47
   // renamed trash-2 to trash, so "Trash2" resolves to the Trash record.
   const kebab = toKebabCase(name);
-  return records.find((r) => r.tags.some((tag) => tag === lower || tag === kebab));
+  const direct = records.find((r) => r.tags.some((tag) => tag === lower || tag === kebab));
+  if (direct) return direct;
+  // An old import name carries the library's affix around the alias: Font Awesome's faSearch is
+  // the "search" alias of faMagnifyingGlass. Strip the affix the record's own import name uses.
+  const query = compact(name);
+  return records.find((r) => {
+    const alias = stripImportAffix(query, r);
+    return alias !== undefined && r.tags.some((tag) => compact(tag) === alias);
+  });
+}
+
+// "Trash-Alt" -> "trashalt": case and separators don't matter when comparing names.
+function compact(value: string): string {
+  return value.toLowerCase().replace(/[-_]/g, "");
+}
+
+/**
+ * Removes the prefix and suffix a record's import name adds around its icon name ("fa" in
+ * faMagnifyingGlass, "icon" in IconTrash or TrashIcon) from a compacted query. Returns
+ * undefined when the query doesn't carry that affix, or the record's import name doesn't
+ * contain its icon name (heroicons' trash-24-outline -> TrashIcon).
+ */
+function stripImportAffix(query: string, record: IconRecord): string | undefined {
+  const importName = compact(record.importName);
+  const name = compact(record.name);
+  const at = importName.indexOf(name);
+  if (at < 0) return undefined;
+  const prefix = importName.slice(0, at);
+  const suffix = importName.slice(at + name.length);
+  if (!prefix && !suffix) return undefined;
+  if (!query.startsWith(prefix) || !query.endsWith(suffix)) return undefined;
+  const alias = query.slice(prefix.length, query.length - suffix.length);
+  return alias || undefined;
 }
 
 /** Looks up one icon by name or import name and returns its full record plus an import snippet. */

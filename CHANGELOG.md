@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `get_icon` resolves old import names that Font Awesome 6+ still exports, such as `faSearch` (→ `faMagnifyingGlass`), `faTrashAlt` (→ `faTrashCan`) and `faTimes` (→ `faXmark`). It returns the current icon, so assistants move old code to the new name. The same lookup covers other libraries' old names with their import affix, e.g. Phosphor's `FolderNotchIcon` → `FolderIcon`.
+
 ### Changed
 
 - `search_icons` ranks icons whose name answers the query first: an exact name, then names starting with the query, then the query as a phrase, then names containing every query word or reaching it through a synonym. Within each level shorter names win and each icon's style variants stay together, default style first. So `trash` on MUI returns `Delete` instead of `RestoreFromTrash`, `delete` on Remix returns `RiDeleteBinLine` before `RiChatDeleteLine`, and `arrow right` returns `arrow-right` before `circle-arrow-right`. Scores encode this order, so it holds when several providers are merged.
