@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Search finds icons that libraries name differently from the query: `close` finds Radix's `Cross1Icon`/`Cross2Icon` and Fluent UI's `Dismiss*`, `menu` finds Phosphor's `ListIcon` and Fluent UI's `Navigation*`, and `github`, `linkedin`, `youtube` and `whatsapp` find MUI's `GitHub`, `LinkedIn`, `YouTube` and `WhatsApp`.
+- Synonyms keyed by a hyphenated name (`credit-card`, `thumbs-up`, `qr-code` and others in `synonyms.json`) now apply. Keyword building looks up the full icon name and each pair of adjacent name parts, not only single parts.
+
 ### Changed
 
 - `search_icons` ranks icons whose name answers the query first: an exact name, then names starting with the query, then the query as a phrase, then names containing every query word or reaching it through a synonym. Within each level shorter names win and each icon's style variants stay together, default style first. So `trash` on MUI returns `Delete` instead of `RestoreFromTrash`, `delete` on Remix returns `RiDeleteBinLine` before `RiChatDeleteLine`, and `arrow right` returns `arrow-right` before `circle-arrow-right`. Scores encode this order, so it holds when several providers are merged.

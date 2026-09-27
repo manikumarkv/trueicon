@@ -47,6 +47,15 @@ describe("buildKeywords", () => {
   it("does not expand inherited object keys", () => {
     expect(buildKeywords("constructor", [], {})).toEqual(["constructor"]);
   });
+
+  it("expands synonyms keyed by the full name or a pair of adjacent parts", () => {
+    const synonyms = { "git-hub": ["github"], "credit-card": ["payment"], "cross-1": ["close"] };
+    expect(buildKeywords("git-hub", [], synonyms)).toEqual(["git", "hub", "github"]);
+    expect(buildKeywords("credit-card-off", [], synonyms)).toEqual(["credit", "card", "off", "payment"]);
+    expect(buildKeywords("cross-1", [], synonyms)).toEqual(["cross", "1", "close"]);
+    // The phrase itself is not added as a keyword, and non-adjacent parts don't pair up.
+    expect(buildKeywords("credit-x-card", [], synonyms)).toEqual(["credit", "x", "card"]);
+  });
 });
 
 describe("hashSynonyms", () => {
