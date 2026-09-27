@@ -246,13 +246,13 @@ Response:
   "results": [
     { "name": "trash", "importName": "Trash", "importPath": "lucide-react", "package": "lucide-react",
       "version": "0.460.0", "style": "outline", "set": "lucide",
-      "usage": "import { Trash } from 'lucide-react';", "score": 2.0e-14 },
+      "usage": "import { Trash } from 'lucide-react';", "score": 0 },
     { "name": "trash-2", "importName": "Trash2", "importPath": "lucide-react", "package": "lucide-react",
       "version": "0.460.0", "style": "outline", "set": "lucide",
-      "usage": "import { Trash2 } from 'lucide-react';", "score": 1.6e-6 },
+      "usage": "import { Trash2 } from 'lucide-react';", "score": 0.02 },
     { "name": "delete", "importName": "Delete", "importPath": "lucide-react", "package": "lucide-react",
       "version": "0.460.0", "style": "outline", "set": "lucide",
-      "usage": "import { Delete } from 'lucide-react';", "score": 1.2e-4 }
+      "usage": "import { Delete } from 'lucide-react';", "score": 0.6 }
   ]
 }
 ```
@@ -260,8 +260,15 @@ Response:
 How search works:
 
 - `provider`, `style` and `set` are exact, case-insensitive filters. They are applied before ranking.
-- Ranking uses [Fuse.js](https://www.fusejs.io/) fuzzy matching over the icon name, import name, keywords and tags. Small typos are tolerated: `"detele"` finds `Delete`.
-- `score` runs from `0` (perfect) to `1`, so lower is better. Results from several providers are merged and sorted by score.
+- Candidates come from [Fuse.js](https://www.fusejs.io/) fuzzy matching over the icon name, import name, keywords and tags. Small typos are tolerated: `"detele"` finds `Delete`.
+- Icons whose name answers the query rank first, compared on the name without its style suffix (`delete-bin-line` → `delete-bin`):
+  1. the name is the query: `delete` finds `delete`, `delete-outlined`, `DeleteRegular`
+  2. the name starts with the query: `delete-bin-line`
+  3. the query is a phrase inside the name: `"arrow right"` finds `circle-arrow-right`
+  4. every query word is in the name, a synonym or a tag: `trash` finds `restore-from-trash`, and `delete` through the trash → delete synonym
+
+  Within a level, shorter names come first, so the plain icon beats composites (`delete` before `restore-from-trash`), and each icon's styles stay together with the default style first. Variant numbers are ignored unless the query has one, so `trash` ranks `trash` then `trash-2`. Everything else, such as typos, follows the fuzzy score.
+- `score` runs from `0` (perfect) to `1`, so lower is better. It encodes the ranking above, so results from several providers are merged and sorted by score without losing it.
 - Multi-word queries are tokenized: each word is matched on its own, only icons that match every word are kept, and they are ranked by their average score. So `"trash can"` finds `trash-can` icons. Short keyword queries (`"trash"`, `"settings"`, `"beer"`) still cast the widest net.
 - If one provider fails, for example because its version can't be resolved or the download fails, its results are skipped and a `warnings` array explains why. The other providers still return results.
 
