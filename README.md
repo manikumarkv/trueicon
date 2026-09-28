@@ -31,7 +31,7 @@ AI assistants often guess icon names. The guess can be an icon that never existe
 | `mui`         | `@mui/icons-material`   | MUI's export names in kebab case, e.g. `delete` → `Delete`. Themes add `-outlined`, `-rounded`, `-sharp` or `-two-tone`, e.g. `delete-outlined` → `DeleteOutlined`; base icons have the style `filled` |
 | `radix`       | `@radix-ui/react-icons` | Radix's icon names, e.g. `trash` → `TrashIcon`, `github-logo` → `GitHubLogoIcon`                          |
 | `remix`       | `@remixicon/react`      | Remix's icon names with the `-line` or `-fill` style, e.g. `delete-bin-line` → `RiDeleteBinLine`          |
-| `fontawesome-solid`   | `@fortawesome/free-solid-svg-icons`   | Font Awesome's icon names, e.g. `trash-can` → `faTrashCan`. Renamed icons' old names (`trash-alt`) are searchable as tags |
+| `fontawesome-solid`   | `@fortawesome/free-solid-svg-icons`   | Font Awesome's icon names, e.g. `trash-can` → `faTrashCan`. Old names still resolve: `get_icon` finds `trash-alt` or `faTrashAlt` as `faTrashCan`, and `faSearch` as `faMagnifyingGlass` |
 | `fontawesome-regular` | `@fortawesome/free-regular-svg-icons` | Same as `fontawesome-solid`, e.g. `star` → `faStar`                                             |
 | `fontawesome-brands`  | `@fortawesome/free-brands-svg-icons`  | Same as `fontawesome-solid`, e.g. `github` → `faGithub`                                         |
 

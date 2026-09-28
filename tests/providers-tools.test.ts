@@ -175,6 +175,8 @@ const CASES: ProviderCase[] = [
       importName: "faTrashCan",
       usage: "import { faTrashCan } from '@fortawesome/free-regular-svg-icons';",
     },
+    // Old import names resolve too: faTrashAlt is a re-export module of faTrashCan.
+    alias: { name: "faTrashAlt", importName: "faTrashCan" },
   },
   {
     id: "fontawesome-brands",
@@ -183,6 +185,8 @@ const CASES: ProviderCase[] = [
     version: "7.3.1",
     query: "trash",
     icon: { name: "trash", importName: "faTrash", usage: "import { faTrash } from '@fortawesome/free-brands-svg-icons';" },
+    // "remove" is one of faXmark's string aliases, so faRemove still resolves.
+    alias: { name: "faRemove", importName: "faXmark" },
   },
 ];
 
@@ -264,6 +268,19 @@ describe.each(CASES)("$id", (c) => {
   it.runIf(c.alias)("get_icon resolves a deprecated alias to the current icon", async () => {
     const icon = await getIconTool({ name: c.alias!.name, provider: c.id }, ctx);
     expect(icon.importName).toBe(c.alias!.importName);
+  });
+});
+
+describe("get_icon old import names", () => {
+  it("strips the library's import affix before matching alias tags", async () => {
+    // phosphor's FolderIcon carries the folder-notch alias; its old export was FolderNotchIcon.
+    expect((await getIconTool({ name: "FolderNotchIcon", provider: "phosphor" }, ctx)).importName).toBe("FolderIcon");
+    // Font Awesome string aliases in their fa<Pascal> export form.
+    expect((await getIconTool({ name: "faTimes", provider: "fontawesome-solid" }, ctx)).importName).toBe("faXmark");
+  });
+
+  it("still reports an unknown old name as missing", async () => {
+    await expect(getIconTool({ name: "faNoSuchIcon", provider: "fontawesome-solid" }, ctx)).rejects.toThrow(/not found/);
   });
 });
 
