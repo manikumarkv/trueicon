@@ -44,8 +44,13 @@ export function hashSynonyms(synonyms: Synonyms): string {
 }
 
 export function buildKeywords(name: string, tags: readonly string[], synonyms: Synonyms): string[] {
-  const terms = [...name.split("-"), ...tags].map((t) => t.toLowerCase()).filter(Boolean);
-  const expansions = terms.flatMap((t) => (Object.hasOwn(synonyms, t) ? synonyms[t]! : []));
+  const parts = name.toLowerCase().split("-").filter(Boolean);
+  const terms = [...parts, ...tags.map((t) => t.toLowerCase())].filter(Boolean);
+  // Synonyms can also be keyed by a hyphenated name ("credit-card", "cross-1", "git-hub"), so
+  // look up the full name and each pair of adjacent parts too. They expand the keywords but
+  // are not keywords themselves.
+  const phrases = [name.toLowerCase(), ...parts.slice(1).map((part, i) => `${parts[i]}-${part}`)];
+  const expansions = [...terms, ...phrases].flatMap((t) => (Object.hasOwn(synonyms, t) ? synonyms[t]! : []));
   return [...new Set([...terms, ...expansions.map((t) => t.toLowerCase())])];
 }
 

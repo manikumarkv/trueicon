@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - `get_icon` resolves old import names that Font Awesome 6+ still exports, such as `faSearch` (→ `faMagnifyingGlass`), `faTrashAlt` (→ `faTrashCan`) and `faTimes` (→ `faXmark`). It returns the current icon, so assistants move old code to the new name. The same lookup covers other libraries' old names with their import affix, e.g. Phosphor's `FolderNotchIcon` → `FolderIcon`.
+- Search finds icons that libraries name differently from the query: `close` finds Radix's `Cross1Icon`/`Cross2Icon` and Fluent UI's `Dismiss*`, `menu` finds Phosphor's `ListIcon` and Fluent UI's `Navigation*`, and `github`, `linkedin`, `youtube` and `whatsapp` find MUI's `GitHub`, `LinkedIn`, `YouTube` and `WhatsApp`.
+- Synonyms keyed by a hyphenated name (`credit-card`, `thumbs-up`, `qr-code` and others in `synonyms.json`) now apply. Keyword building looks up the full icon name and each pair of adjacent name parts, not only single parts.
 
 ### Changed
 

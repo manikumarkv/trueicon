@@ -125,6 +125,25 @@ Start a new Claude Code session so it picks up the server. The first search for 
 - Calls `search_icons` with `version: "0.460.0"`.
 - Pass: `trash` first, then `trash-2`.
 
+**3.8 Libraries with their own names**
+
+> Radix close icon.
+
+- Pass: `Cross1Icon`, `Cross2Icon` or `CrossCircledIcon` first.
+
+> Fluent UI close icon.
+
+- Pass: `DismissFilled` / `DismissRegular` first.
+
+> Phosphor hamburger menu icon.
+
+- Calls `search_icons` with `query: "menu"` (or `"hamburger menu"`).
+- Pass: `ListIcon` first.
+
+> MUI GitHub icon.
+
+- Pass: `import { GitHub } from '@mui/icons-material';`. The same works for `LinkedIn`, `YouTube` and `WhatsApp`.
+
 ## 4. Filters
 
 **4.1 Style**
