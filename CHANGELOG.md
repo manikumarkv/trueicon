@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-09-29
+
 ### Fixed
 
 - `get_icon` resolves old import names that Font Awesome 6+ still exports, such as `faSearch` (→ `faMagnifyingGlass`), `faTrashAlt` (→ `faTrashCan`) and `faTimes` (→ `faXmark`). It returns the current icon, so assistants move old code to the new name. The same lookup covers other libraries' old names with their import affix, e.g. Phosphor's `FolderNotchIcon` → `FolderIcon`.
@@ -51,7 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Supported the `react-icons`, `lucide-react` and `@heroicons/react` providers.
 
-[Unreleased]: https://github.com/manikumarkv/trueicon/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/manikumarkv/trueicon/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/manikumarkv/trueicon/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/manikumarkv/trueicon/compare/v0.3.1...v0.4.0
 [0.2.0]: https://github.com/manikumarkv/trueicon/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/manikumarkv/trueicon/releases/tag/v0.1.1
