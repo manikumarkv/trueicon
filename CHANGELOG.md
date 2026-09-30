@@ -31,6 +31,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Opt-in semantic search for `search_icons`: set `"semantic": true` in `.iconmcp.json` (or `TRUEICON_SEMANTIC=1`) to merge cosine-similarity ranking over per-icon embedding vectors with the keyword ranking, using reciprocal rank fusion. Vectors come from a small local model (`Xenova/all-MiniLM-L6-v2`, ~90MB downloaded once), built into `index.json` at index time; `meta.json` records the embedding model so toggling the flag rebuilds indexes automatically. Fully offline after the first download. `@huggingface/transformers` is an optional peer dependency and is not installed by default (about 400MB); run `npm install @huggingface/transformers` to enable semantic search. Without it, `search_icons` falls back to keyword search with a warning that gives the install command.
 - Greatly expanded the bundled `synonyms.json` (78 → 345 concepts) covering files, editing, media, devices, weather, finance, layout/UI, social, nature and more, with 20 new search-eval cases proving they resolve.
 
+## [0.3.1] - 2026-09-24
+
+### Fixed
+
+- Multi-word queries no longer drop the right icon when one word isn't in its keywords. 0.2.0 kept only icons matching every word, which excluded `trash` icons for `"trash can"` (no keyword `can`) while unrelated icons slipped through on loose matches (`kanban` ~ `can`). Candidates now match at least one word and are ranked by their best word score, then by how many words matched, then by their mean score.
+
+### Added
+
+- A search quality eval (`tests/eval/cases.json`): an answer key of queries and the icons they must return, run with the test suite.
+
+## [0.3.0] - 2026-09-24
+
+### Added
+
+- Automatic project detection. Without `.iconmcp.json`, TrueIcon searches every supported package in `package.json` `dependencies` or `devDependencies`, where 0.2.x failed with "No icon providers configured". `.iconmcp.json` is now an optional override.
+- Versions resolve from the tool argument, then the `.iconmcp.json` pin, then the version installed in `node_modules` (walking up for hoisted monorepo installs), then the `package.json` range.
+- The project directory is `TRUEICON_PROJECT_DIR`, else the first folder the MCP client shares (roots) that has a `package.json` or `.iconmcp.json`, else the working directory.
+- `list_providers` reports the project directory and how it was found, and where the providers and each version came from.
+
+### Fixed
+
+- The server reports its real version to MCP clients. 0.2.1 reported itself as 0.2.0.
+- The error for a project with no icon packages says which directory was checked and how to fix it.
+
+## [0.2.1] - 2026-09-24
+
+### Fixed
+
+- `lucide-react` releases after about 0.460 are indexed. The adapter only read the oldest module format, so later 0.x and 1.0–1.46 failed to parse and 1.47+ indexed no icons. All three formats are read, from `.js` and `.mjs` files.
+- `get_icon` resolves icons renamed upstream through their alias names: in lucide 1.47, `Trash2` returns `Trash`.
+
+### Added
+
+- `npm run dev:call`, `dev:inspect` and `dev:debug` for testing and debugging the local build against `playground/`.
+- Tool tests for every provider, and `npm run smoke`, which indexes pinned and latest releases of every provider from npm.
+
 ## [0.2.0] - 2026-09-24
 
 ### Added
@@ -56,5 +92,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [Unreleased]: https://github.com/manikumarkv/trueicon/compare/v0.5.0...HEAD
 [0.5.0]: https://github.com/manikumarkv/trueicon/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/manikumarkv/trueicon/compare/v0.3.1...v0.4.0
+[0.3.1]: https://github.com/manikumarkv/trueicon/compare/v0.3.0...v0.3.1
+[0.3.0]: https://github.com/manikumarkv/trueicon/compare/v0.2.1...v0.3.0
+[0.2.1]: https://github.com/manikumarkv/trueicon/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/manikumarkv/trueicon/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/manikumarkv/trueicon/releases/tag/v0.1.1
