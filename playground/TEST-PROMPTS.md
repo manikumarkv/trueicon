@@ -6,7 +6,7 @@ Each test lists the prompt, the tool call the assistant should make, and what co
 
 ## Setup
 
-Build the server and register it against this folder, which lists all 15 providers:
+Build the server and register it against this folder, which lists all 24 providers:
 
 ```sh
 npm run build
@@ -22,14 +22,14 @@ Start a new Claude Code session so it picks up the server. The first search for 
 > Which icon libraries can you search in this project?
 
 - Calls `list_providers`.
-- Pass: `project.source` is `TRUEICON_PROJECT_DIR`, `providersFrom` is `package.json`, and all 15 providers are `configured` with `source: "package.json"` and the version ranges from `playground/package.json`.
+- Pass: `project.source` is `TRUEICON_PROJECT_DIR`, `providersFrom` is `package.json`, and all 24 providers are `configured` with `source: "package.json"` and the version ranges from `playground/package.json`.
 
 **1.2 Supported list**
 
 > Which icon packages does TrueIcon support in general?
 
 - Calls `list_providers`.
-- Pass: the answer lists the 15 `registry` entries, including the three Font Awesome packages.
+- Pass: the answer lists the 24 `registry` entries, including the three Font Awesome packages and the Vue and Svelte packages.
 
 ## 2. Basic search
 
@@ -228,6 +228,15 @@ One prompt per provider. Pass: the first result and its import line match.
 | Font Awesome solid user icon | `import { faUser } from '@fortawesome/free-solid-svg-icons';` |
 | Font Awesome regular star icon | `import { faStar } from '@fortawesome/free-regular-svg-icons';` |
 | Font Awesome GitHub logo | `import { faGithub } from '@fortawesome/free-brands-svg-icons';` |
+| Vue: Lucide trash icon (`@lucide/vue`) | `import { Trash } from '@lucide/vue';` |
+| Vue: Lucide trash icon, old package (`lucide-vue-next`) | `import { Trash } from 'lucide-vue-next';` |
+| Svelte 5: Lucide trash icon (`@lucide/svelte`) | `import { Trash } from '@lucide/svelte';` |
+| Svelte: Lucide trash icon, old package (`lucide-svelte`) | `import { Trash } from 'lucide-svelte';` |
+| Vue: Heroicons outline trash icon | `import { TrashIcon } from '@heroicons/vue/24/outline';` |
+| Vue: Tabler trash icon | `import { IconTrash } from '@tabler/icons-vue';` |
+| Svelte: Tabler trash icon | `import { IconTrash } from '@tabler/icons-svelte';` |
+| Vue: Phosphor trash icon | `import { PhTrash } from '@phosphor-icons/vue';` |
+| Svelte: Phosphor trash icon | `import { TrashIcon } from 'phosphor-svelte';` |
 
 **6.1 Font Awesome rendering**
 
@@ -318,3 +327,7 @@ The assistant should call TrueIcon on its own, without being told to. Pass: ever
 > Make a footer with GitHub, X and LinkedIn links using Font Awesome brand icons.
 
 > Replace every icon in this component with the Phosphor equivalent, bold weight.
+
+> This is a Vue 3 app using @lucide/vue. Add a toolbar with undo, redo and save buttons.
+
+> In this Svelte 5 app (phosphor-svelte), show a spinner icon while the form submits.

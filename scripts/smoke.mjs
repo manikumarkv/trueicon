@@ -40,6 +40,15 @@ const TARGETS = {
   "fontawesome-solid": { versions: ["5.15.4", "6.7.2"], icons: ["faTrash", "faUser", "faHouseUser"], minIcons: 800 },
   "fontawesome-regular": { versions: ["5.15.4", "6.7.2"], icons: ["faUser", "faStar", "faHeart"], minIcons: 120 },
   "fontawesome-brands": { versions: ["5.15.4", "6.7.2"], icons: ["faGithub", "faReact", "faApple"], minIcons: 400 },
+  "lucide-vue": { versions: ["1.0.1"], icons: ["Search", "User", "House"], minIcons: 1000 },
+  "lucide-vue-next": { versions: ["0.460.0", "0.577.0"], icons: ["Search", "User", "House"], minIcons: 1000 },
+  "lucide-svelte5": { versions: ["0.479.0", "0.577.0"], icons: ["Search", "User", "House"], minIcons: 1000 },
+  "lucide-svelte": { versions: ["0.460.0", "0.577.0"], icons: ["Search", "User", "House"], minIcons: 1000 },
+  "heroicons-vue": { versions: ["2.0.18", "2.1.5"], icons: ["TrashIcon", "MagnifyingGlassIcon", "UserIcon"], minIcons: 800 },
+  "tabler-vue": { versions: ["2.47.0", "3.0.0"], icons: ["IconTrash", "IconSearch", "IconUser"], minIcons: 4000 },
+  "tabler-svelte": { versions: ["2.47.0", "3.0.0"], icons: ["IconTrash", "IconSearch", "IconUser"], minIcons: 4000 },
+  "phosphor-vue": { versions: ["2.1.0", "2.1.6"], icons: ["PhTrash", "PhMagnifyingGlass", "PhUser"], minIcons: 5000 },
+  "phosphor-svelte": { versions: [], icons: ["TrashIcon", "MagnifyingGlassIcon", "UserIcon"], minIcons: 5000 },
 };
 
 async function latestVersion(pkg) {
