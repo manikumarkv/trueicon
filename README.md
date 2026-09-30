@@ -391,6 +391,8 @@ npm run typecheck  # tsc --noEmit
 
 CI runs lint, typecheck and tests on Node 20 and 22 for every push and pull request.
 
+In Claude Code on the web, a SessionStart hook (`.claude/hooks/session-start.sh`) installs the dependencies when a session starts, so these commands work straight away. It installs with `--ignore-scripts` because the sandbox blocks the native download in the optional semantic-search dependency; the semantic tests that need it are skipped there.
+
 ### Tests
 
 | Command | What it checks | Network |
