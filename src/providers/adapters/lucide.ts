@@ -20,6 +20,9 @@ import { renderSvg, toSvgAttrs, type SvgNode } from "../svg.js";
  * Deprecated alias names ship as re-export modules (`export { default } from './target.js'`), and
  * from 1.47 also in __iconData.aliases. They are not indexed separately but added to the target
  * icon's tags so old names still match. lucide-react ships no categories or tags of its own.
+ *
+ * The Vue packages (lucide-vue-next, and @lucide/vue from 1.x) are built the same way, with the
+ * same module shapes and component names, so they share this parser with their own import path.
  */
 
 const ICONS_DIR = join("dist", "esm", "icons");
@@ -69,7 +72,14 @@ function parseModule(src: string): { importName: string; nodes: SvgNode[]; alias
   return { importName, nodes: toNodes(cursor, cursor.array()), aliases: [] };
 }
 
-export function parseIcons(packageDir: string): RawIcon[] {
+/** A parser for a package with lucide-react's layout, importing from `importPath`. */
+export function lucideModules(importPath: string): (packageDir: string) => RawIcon[] {
+  return (packageDir) => parseLucideModules(packageDir, importPath);
+}
+
+export const parseIcons = lucideModules("lucide-react");
+
+function parseLucideModules(packageDir: string, importPath: string): RawIcon[] {
   const dir = join(packageDir, ICONS_DIR);
   const icons = new Map<string, RawIcon>();
   const aliases: [alias: string, target: string][] = [];
@@ -87,7 +97,7 @@ export function parseIcons(packageDir: string): RawIcon[] {
     icons.set(name, {
       name,
       importName: icon.importName,
-      importPath: "lucide-react",
+      importPath,
       style: "outline",
       set: "lucide",
       categories: [],

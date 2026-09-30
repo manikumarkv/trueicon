@@ -19,6 +19,15 @@ describe("provider registry", () => {
       ["fontawesome-solid", "@fortawesome/free-solid-svg-icons"],
       ["fontawesome-regular", "@fortawesome/free-regular-svg-icons"],
       ["fontawesome-brands", "@fortawesome/free-brands-svg-icons"],
+      ["lucide-vue", "@lucide/vue"],
+      ["lucide-vue-next", "lucide-vue-next"],
+      ["lucide-svelte5", "@lucide/svelte"],
+      ["lucide-svelte", "lucide-svelte"],
+      ["heroicons-vue", "@heroicons/vue"],
+      ["tabler-vue", "@tabler/icons-vue"],
+      ["tabler-svelte", "@tabler/icons-svelte"],
+      ["phosphor-vue", "@phosphor-icons/vue"],
+      ["phosphor-svelte", "phosphor-svelte"],
     ]);
     for (const p of PROVIDERS) expect(p.description).toBeTruthy();
   });
@@ -38,6 +47,15 @@ describe("provider registry", () => {
     expect(getProvider("fontawesome-solid")?.package).toBe("@fortawesome/free-solid-svg-icons");
     expect(getProvider("fontawesome-regular")?.package).toBe("@fortawesome/free-regular-svg-icons");
     expect(getProvider("fontawesome-brands")?.package).toBe("@fortawesome/free-brands-svg-icons");
+    expect(getProvider("lucide-vue")?.package).toBe("@lucide/vue");
+    expect(getProvider("lucide-vue-next")?.package).toBe("lucide-vue-next");
+    expect(getProvider("lucide-svelte5")?.package).toBe("@lucide/svelte");
+    expect(getProvider("lucide-svelte")?.package).toBe("lucide-svelte");
+    expect(getProvider("heroicons-vue")?.package).toBe("@heroicons/vue");
+    expect(getProvider("tabler-vue")?.package).toBe("@tabler/icons-vue");
+    expect(getProvider("tabler-svelte")?.package).toBe("@tabler/icons-svelte");
+    expect(getProvider("phosphor-vue")?.package).toBe("@phosphor-icons/vue");
+    expect(getProvider("phosphor-svelte")?.package).toBe("phosphor-svelte");
   });
 
   it("looks up providers by package name", () => {
@@ -56,6 +74,15 @@ describe("provider registry", () => {
     expect(getProvider("@fortawesome/free-solid-svg-icons")?.id).toBe("fontawesome-solid");
     expect(getProvider("@fortawesome/free-regular-svg-icons")?.id).toBe("fontawesome-regular");
     expect(getProvider("@fortawesome/free-brands-svg-icons")?.id).toBe("fontawesome-brands");
+    expect(getProvider("@lucide/vue")?.id).toBe("lucide-vue");
+    expect(getProvider("lucide-vue-next")?.id).toBe("lucide-vue-next");
+    expect(getProvider("@lucide/svelte")?.id).toBe("lucide-svelte5");
+    expect(getProvider("lucide-svelte")?.id).toBe("lucide-svelte");
+    expect(getProvider("@heroicons/vue")?.id).toBe("heroicons-vue");
+    expect(getProvider("@tabler/icons-vue")?.id).toBe("tabler-vue");
+    expect(getProvider("@tabler/icons-svelte")?.id).toBe("tabler-svelte");
+    expect(getProvider("@phosphor-icons/vue")?.id).toBe("phosphor-vue");
+    expect(getProvider("phosphor-svelte")?.id).toBe("phosphor-svelte");
   });
 
   it("returns undefined for unknown providers", () => {

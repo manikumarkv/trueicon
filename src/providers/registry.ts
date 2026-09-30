@@ -83,6 +83,51 @@ export const PROVIDERS: readonly Provider[] = [
     package: "@fortawesome/free-brands-svg-icons",
     description: "Font Awesome Free brand logos, rendered with @fortawesome/react-fontawesome",
   },
+  {
+    id: "lucide-vue",
+    package: "@lucide/vue",
+    description: "Lucide icons as Vue components",
+  },
+  {
+    id: "lucide-vue-next",
+    package: "lucide-vue-next",
+    description: "Lucide icons as Vue components (deprecated package, replaced by @lucide/vue)",
+  },
+  {
+    id: "lucide-svelte5",
+    package: "@lucide/svelte",
+    description: "Lucide icons as Svelte 5 components",
+  },
+  {
+    id: "lucide-svelte",
+    package: "lucide-svelte",
+    description: "Lucide icons as Svelte components (deprecated package, replaced by @lucide/svelte)",
+  },
+  {
+    id: "heroicons-vue",
+    package: "@heroicons/vue",
+    description: "Heroicons by the Tailwind CSS team as Vue components",
+  },
+  {
+    id: "tabler-vue",
+    package: "@tabler/icons-vue",
+    description: "Tabler icons (outline and filled) as Vue components",
+  },
+  {
+    id: "tabler-svelte",
+    package: "@tabler/icons-svelte",
+    description: "Tabler icons (outline and filled) as Svelte components",
+  },
+  {
+    id: "phosphor-vue",
+    package: "@phosphor-icons/vue",
+    description: "Phosphor icons in six weights as Vue components",
+  },
+  {
+    id: "phosphor-svelte",
+    package: "phosphor-svelte",
+    description: "Phosphor icons in six weights as Svelte components",
+  },
 ];
 
 // Finds a provider by its id or by its npm package name.

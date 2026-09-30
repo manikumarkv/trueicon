@@ -31,7 +31,9 @@
     "material-icons",
     "radix",
     "remixicon",
-    "fontawesome"
+    "fontawesome",
+    "vue",
+    "svelte"
   ],
   "type": "module",
   "bin": {

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Vue and Svelte icon packages, nine new providers for 24 in total:
+  - Lucide: `@lucide/vue` (`lucide-vue`) and `@lucide/svelte` (`lucide-svelte5`), plus the deprecated but still widely used `lucide-vue-next` and `lucide-svelte`.
+  - `@heroicons/vue` (`heroicons-vue`), `@tabler/icons-vue` (`tabler-vue`), `@tabler/icons-svelte` (`tabler-svelte`), `@phosphor-icons/vue` (`phosphor-vue`) and `phosphor-svelte` (`phosphor-svelte`).
+
+  They are detected from `package.json` like the React packages, and import lines use each package's own component names and paths. Tabler 2.x and phosphor-svelte 2.x layouts are supported too.
+
 ## [0.5.0] - 2026-09-29
 
 ### Fixed

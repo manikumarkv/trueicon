@@ -5,7 +5,7 @@
 [![Install in VS Code Insiders](https://img.shields.io/badge/VS_Code_Insiders-Install_Server-24bfa5?style=flat-square&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=trueicon&config=%7B%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22trueicon%22%5D%2C%22env%22%3A%7B%22TRUEICON_PROJECT_DIR%22%3A%22%24%7BworkspaceFolder%7D%22%7D%7D&quality=insiders)
 [![Install in Cursor](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en/install-mcp?name=trueicon&config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyIteSIsInRydWVpY29uIl0sImVudiI6eyJUUlVFSUNPTl9QUk9KRUNUX0RJUiI6IiR7d29ya3NwYWNlRm9sZGVyfSJ9fQ%3D%3D)
 
-TrueIcon is an [MCP](https://modelcontextprotocol.io) server that gives AI coding assistants exact, version-correct icon references. Your assistant searches the icon packages your project actually uses (`lucide-react`, `react-icons`, `@heroicons/react`, `@phosphor-icons/react`, `@tabler/icons-react`, `iconoir-react`, `@fluentui/react-icons`, `@carbon/icons-react`, `@ant-design/icons`, `@mui/icons-material`, `@radix-ui/react-icons`, `@remixicon/react` and the Font Awesome Free packages) and gets back real icon names, import paths and a ready-to-paste `import` line.
+TrueIcon is an [MCP](https://modelcontextprotocol.io) server that gives AI coding assistants exact, version-correct icon references. Your assistant searches the icon packages your project actually uses (`lucide-react`, `react-icons`, `@heroicons/react`, `@phosphor-icons/react`, `@tabler/icons-react`, `iconoir-react`, `@fluentui/react-icons`, `@carbon/icons-react`, `@ant-design/icons`, `@mui/icons-material`, `@radix-ui/react-icons`, `@remixicon/react`, the Font Awesome Free packages, and the Vue and Svelte packages of Lucide, Heroicons, Tabler and Phosphor) and gets back real icon names, import paths and a ready-to-paste `import` line.
 
 ## Why
 
@@ -35,7 +35,25 @@ AI assistants often guess icon names. The guess can be an icon that never existe
 | `fontawesome-regular` | `@fortawesome/free-regular-svg-icons` | Same as `fontawesome-solid`, e.g. `star` → `faStar`                                             |
 | `fontawesome-brands`  | `@fortawesome/free-brands-svg-icons`  | Same as `fontawesome-solid`, e.g. `github` → `faGithub`                                         |
 
-Tools accept either the provider id or the npm package name (`"lucide"` or `"lucide-react"`). Usage snippets are for React. Phosphor weights all share one component, so pass the record's `style` as the `weight` prop (e.g. `<TrashIcon weight="bold" />`); the usage snippet only shows the import. Font Awesome imports are icon definitions, not components: render them with `@fortawesome/react-fontawesome`, e.g. `<FontAwesomeIcon icon={faTrashCan} />`.
+### Vue and Svelte
+
+These index the same artwork as the React packages above, with each package's own component names and import paths.
+
+| Provider id       | npm package            | Icon naming                                                                      |
+| ----------------- | ---------------------- | -------------------------------------------------------------------------------- |
+| `lucide-vue`      | `@lucide/vue`          | Same as `lucide`, e.g. `trash` → `Trash`                                         |
+| `lucide-vue-next` | `lucide-vue-next`      | Same as `lucide`. Deprecated upstream in favor of `@lucide/vue`, still widely used |
+| `lucide-svelte5`  | `@lucide/svelte`       | Same as `lucide` (Svelte 5)                                                      |
+| `lucide-svelte`   | `lucide-svelte`        | Same as `lucide`. Deprecated upstream in favor of `@lucide/svelte`               |
+| `heroicons-vue`   | `@heroicons/vue`       | Same as `heroicons`, e.g. `trash-24-outline` → `TrashIcon` from `@heroicons/vue/24/outline` |
+| `tabler-vue`      | `@tabler/icons-vue`    | Same as `tabler`, e.g. `trash` → `IconTrash`                                     |
+| `tabler-svelte`   | `@tabler/icons-svelte` | Same as `tabler`                                                                 |
+| `phosphor-vue`    | `@phosphor-icons/vue`  | Same as `phosphor`, e.g. `trash-bold` → `PhTrash` with `weight="bold"`           |
+| `phosphor-svelte` | `phosphor-svelte`      | Same as `phosphor`, e.g. `trash-bold` → `TrashIcon` with `weight="bold"`         |
+
+Heroicons has no official Svelte package. Angular packages aren't supported yet.
+
+Tools accept either the provider id or the npm package name (`"lucide"` or `"lucide-react"`). Usage snippets are import lines, which work the same way in React, Vue and Svelte. Phosphor weights all share one component, so pass the record's `style` as the `weight` prop (e.g. `<TrashIcon weight="bold" />`); the usage snippet only shows the import. Font Awesome imports are icon definitions, not components: render them with `@fortawesome/react-fontawesome`, e.g. `<FontAwesomeIcon icon={faTrashCan} />`.
 
 ## Install
 
@@ -79,7 +97,7 @@ That's it for most projects. TrueIcon finds the icon packages your `package.json
 | Field                   | Type   | Required | Meaning                                                                                  |
 | ----------------------- | ------ | -------- | ---------------------------------------------------------------------------------------- |
 | `providers`             | array  | yes      | Icon packages to search. When it lists any, `package.json` is not used to pick packages. |
-| `providers[].package`   | string | yes      | npm package name: `lucide-react`, `react-icons`, `@heroicons/react`, `@phosphor-icons/react`, `@tabler/icons-react`, `iconoir-react`, `@fluentui/react-icons`, `@carbon/icons-react`, `@ant-design/icons`, `@mui/icons-material`, `@radix-ui/react-icons`, `@remixicon/react`, `@fortawesome/free-solid-svg-icons`, `@fortawesome/free-regular-svg-icons` or `@fortawesome/free-brands-svg-icons`. |
+| `providers[].package`   | string | yes      | npm package name of a supported provider, e.g. `lucide-react`, `@lucide/vue` or `@tabler/icons-svelte` (see [Supported providers](#supported-providers)). |
 | `providers[].version`   | string | no       | Exact version or npm range. Overrides the installed version (see [Versions](#versions)). |
 | `semantic`              | bool   | no       | Opt-in semantic search (default `false`). See below. |
 
@@ -299,7 +317,16 @@ Takes no arguments. Returns the project directory TrueIcon reads and how it was 
     { "id": "remix", "package": "@remixicon/react", "description": "Remix Icon (line and fill) as React components" },
     { "id": "fontawesome-solid", "package": "@fortawesome/free-solid-svg-icons", "description": "Font Awesome Free solid icons, rendered with @fortawesome/react-fontawesome" },
     { "id": "fontawesome-regular", "package": "@fortawesome/free-regular-svg-icons", "description": "Font Awesome Free regular icons, rendered with @fortawesome/react-fontawesome" },
-    { "id": "fontawesome-brands", "package": "@fortawesome/free-brands-svg-icons", "description": "Font Awesome Free brand logos, rendered with @fortawesome/react-fontawesome" }
+    { "id": "fontawesome-brands", "package": "@fortawesome/free-brands-svg-icons", "description": "Font Awesome Free brand logos, rendered with @fortawesome/react-fontawesome" },
+    { "id": "lucide-vue", "package": "@lucide/vue", "description": "Lucide icons as Vue components" },
+    { "id": "lucide-vue-next", "package": "lucide-vue-next", "description": "Lucide icons as Vue components (deprecated package, replaced by @lucide/vue)" },
+    { "id": "lucide-svelte5", "package": "@lucide/svelte", "description": "Lucide icons as Svelte 5 components" },
+    { "id": "lucide-svelte", "package": "lucide-svelte", "description": "Lucide icons as Svelte components (deprecated package, replaced by @lucide/svelte)" },
+    { "id": "heroicons-vue", "package": "@heroicons/vue", "description": "Heroicons by the Tailwind CSS team as Vue components" },
+    { "id": "tabler-vue", "package": "@tabler/icons-vue", "description": "Tabler icons (outline and filled) as Vue components" },
+    { "id": "tabler-svelte", "package": "@tabler/icons-svelte", "description": "Tabler icons (outline and filled) as Svelte components" },
+    { "id": "phosphor-vue", "package": "@phosphor-icons/vue", "description": "Phosphor icons in six weights as Vue components" },
+    { "id": "phosphor-svelte", "package": "phosphor-svelte", "description": "Phosphor icons in six weights as Svelte components" }
   ]
 }
 ```
@@ -397,14 +424,14 @@ In Claude Code on the web, a SessionStart hook (`.claude/hooks/session-start.sh`
 
 | Command | What it checks | Network |
 | --- | --- | --- |
-| `npm test` | Adapter parsing and every tool (`search_icons`, `get_icon`, `list_providers`) for all 15 providers, using the small fixtures in `tests/fixtures/` | No |
+| `npm test` | Adapter parsing and every tool (`search_icons`, `get_icon`, `list_providers`) for all 24 providers, using the small fixtures in `tests/fixtures/` | No |
 | `npm run smoke` | Every provider against the real npm packages: several pinned releases plus the current latest, checking the icon count and a few well-known icons | Yes |
 
 The fixtures only change when someone edits them, so they can't catch a provider that changes its package format upstream. `npm run smoke` does. Run `npm run smoke -- lucide tabler` to check only some providers. CI runs it on pull requests that change `src/providers/`, `src/indexer/` or `src/cache/`, and every Monday against the latest releases.
 
 ### Testing and debugging locally
 
-These scripts build the server and run it against `playground/`, a sample project that lists all 15 providers at their latest versions. They use a separate cache in `.cache/dev/`, so your real `~/.trueicon` cache is untouched.
+These scripts build the server and run it against `playground/`, a sample project that lists all 24 providers at their latest versions. They use a separate cache in `.cache/dev/`, so your real `~/.trueicon` cache is untouched.
 
 ```sh
 # Call one tool and print the result

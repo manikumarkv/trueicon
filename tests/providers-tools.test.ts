@@ -188,6 +188,90 @@ const CASES: ProviderCase[] = [
     // "remove" is one of faXmark's string aliases, so faRemove still resolves.
     alias: { name: "faRemove", importName: "faXmark" },
   },
+  // Vue and Svelte packages. The Lucide Vue packages share lucide-react's module formats, so
+  // they reuse its fixtures.
+  {
+    id: "lucide-vue",
+    package: "@lucide/vue",
+    fixture: "lucide-v1",
+    version: "1.49.0",
+    query: "trash",
+    icon: { name: "trash", importName: "Trash", usage: "import { Trash } from '@lucide/vue';" },
+    alias: { name: "Trash2", importName: "Trash" },
+  },
+  {
+    id: "lucide-vue-next",
+    package: "lucide-vue-next",
+    fixture: "lucide-iconnode",
+    version: "0.577.0",
+    query: "trash",
+    icon: { name: "trash-2", importName: "Trash2", usage: "import { Trash2 } from 'lucide-vue-next';" },
+    alias: { name: "activity-square", importName: "SquareActivity" },
+  },
+  {
+    id: "lucide-svelte5",
+    package: "@lucide/svelte",
+    fixture: "lucide-svelte5",
+    version: "1.49.0",
+    query: "trash",
+    icon: { name: "trash", importName: "Trash", usage: "import { Trash } from '@lucide/svelte';" },
+    alias: { name: "Trash2", importName: "Trash" },
+  },
+  {
+    id: "lucide-svelte",
+    package: "lucide-svelte",
+    fixture: "lucide-svelte",
+    version: "1.0.1",
+    query: "trash",
+    icon: { name: "trash", importName: "Trash", usage: "import { Trash } from 'lucide-svelte';" },
+  },
+  {
+    id: "heroicons-vue",
+    package: "@heroicons/vue",
+    fixture: "heroicons-vue",
+    version: "2.2.0",
+    query: "trash",
+    icon: {
+      name: "trash-24-outline",
+      importName: "TrashIcon",
+      usage: "import { TrashIcon } from '@heroicons/vue/24/outline';",
+    },
+  },
+  {
+    id: "tabler-vue",
+    package: "@tabler/icons-vue",
+    fixture: "tabler-vue",
+    version: "3.48.0",
+    query: "trash",
+    icon: { name: "trash", importName: "IconTrash", usage: "import { IconTrash } from '@tabler/icons-vue';" },
+    alias: { name: "123", importName: "IconNumber123" },
+  },
+  {
+    id: "tabler-svelte",
+    package: "@tabler/icons-svelte",
+    fixture: "tabler-svelte",
+    version: "3.48.0",
+    query: "trash",
+    icon: { name: "trash", importName: "IconTrash", usage: "import { IconTrash } from '@tabler/icons-svelte';" },
+    alias: { name: "123", importName: "IconNumber123" },
+  },
+  {
+    id: "phosphor-vue",
+    package: "@phosphor-icons/vue",
+    fixture: "phosphor-vue",
+    version: "2.2.1",
+    query: "trash",
+    icon: { name: "trash", importName: "PhTrash", usage: "import { PhTrash } from '@phosphor-icons/vue';" },
+    alias: { name: "PhFolderNotch", importName: "PhFolder" },
+  },
+  {
+    id: "phosphor-svelte",
+    package: "phosphor-svelte",
+    fixture: "phosphor-svelte",
+    version: "3.1.0",
+    query: "trash",
+    icon: { name: "trash", importName: "TrashIcon", usage: "import { TrashIcon } from 'phosphor-svelte';" },
+  },
 ];
 
 let cacheRoot: string;
@@ -253,9 +337,13 @@ describe.each(CASES)("$id", (c) => {
       usage: c.icon.usage,
     });
     expect(byName.svg.length).toBeGreaterThan(0);
-    // react-icons repeats import names across sets (FaBeer in fa and fa6), so only the name is unique there.
-    if (c.id !== "react-icons") {
-      expect((await getIconTool({ name: c.icon.importName, provider: c.id }, ctx)).name).toBe(c.icon.name);
+    // react-icons repeats import names across sets (FaBeer in fa and fa6), and heroicons across
+    // sizes (TrashIcon in 20/solid and 24/outline), so only the name is unique there.
+    const byImportName = await getIconTool({ name: c.icon.importName, provider: c.id }, ctx);
+    if (c.id === "react-icons" || c.id === "heroicons-vue") {
+      expect(byImportName.importName).toBe(c.icon.importName);
+    } else {
+      expect(byImportName.name).toBe(c.icon.name);
     }
   });
 
